@@ -1,1 +1,0 @@
-def sarja_git(self):
