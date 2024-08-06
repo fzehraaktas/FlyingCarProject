@@ -10,6 +10,7 @@ class Cezeri(CezeriParent):
         self.kalkis_enlem = self.gnss.enlem
         self.kalkis_boylam = self.gnss.boylam
         self.gidildi=False
+        self.i = 0
 
     def donus_tamamla(self,guncel_enlem,guncel_boylam,hedef_enlem,hedef_boylam):#donus fonksiyonu
  
@@ -70,14 +71,22 @@ class Cezeri(CezeriParent):
                 self.don(donus_aci) 
 
     def git(self,guncel_enlem,guncel_boylam,hedef_enlem,hedef_boylam):
-     
+
+        for i, hedef in enumerate(self.hedefler):
+            if hedef_enlem == hedef.bolge.enlem and hedef_boylam == hedef.bolge.boylam:
+                hedef = self.hedefler[i]
+                break
+
         uzaklik = math.sqrt((hedef_enlem-guncel_enlem)**2 + (hedef_boylam-guncel_boylam)**2)
         self.donus_tamamla(guncel_enlem,guncel_boylam,hedef_enlem,hedef_boylam)
         if uzaklik < 50:
             if uzaklik < 30:
                 if uzaklik < 5:
-                    self.dur()
-                    self.gidildi=True
+                    if hedef.amac == INIS:
+                        self.dur()
+                    else:
+                        self.i +=1  
+
                 else: 
                     self.ileri_git(YAVAS)
             else:
@@ -85,7 +94,12 @@ class Cezeri(CezeriParent):
         else: 
             self.ileri_git(HIZLI)
         
-    def inis_yap(self,guncel_enlem,guncel_boylam,hedef_enlem,hedef_boylam):
+    def inis_yap(self,guncel_enlem,guncel_boylam):
+
+        for hedef in self.hedefler:
+            if hedef.amac == INIS:
+                hedef_enlem = hedef.bolge.enlem
+                hedef_boylam = hedef.bolge.boylam
 
         uzaklik = math.sqrt((hedef_enlem-guncel_enlem)**2 + (hedef_boylam-guncel_boylam)**2)
 
@@ -93,6 +107,9 @@ class Cezeri(CezeriParent):
             self.dur()   
             self.asagi_git(YAVAS)
             return True
+
+    
+
 
     def ruzgar(self,kalkis_enlem,kalkis_boylam,hedef_enlem,hedef_boylam):
         #print("ruzgar aranıyor...")
@@ -182,10 +199,24 @@ class Cezeri(CezeriParent):
 
             print("durak",self.durak_enlem,self.durak_boylam)
 
-    def rota_olustur(self,hedefler,oncelik,bitis):
+
+    def rota_olustur(self):
+
+        hedefler = []
+        oncelik = []
+        bitis = None
+
+        for hedef in self.hedefler:
+            if hedef.amac == INIS:
+                bitis = (hedef.bolge.enlem,hedef.bolge.boylam)
+            else:
+                hedefler.append((hedef.bolge.enlem,hedef.bolge.boylam))
+                oncelik.append(hedef.sira)
+
         if bitis==None:
             bitis_koordinat = []
             bitis_koordinat = np.array(bitis_koordinat)
+
         else:
             bitis_koordinat = np.array(bitis)
 
@@ -272,57 +303,43 @@ class Cezeri(CezeriParent):
         en_kisa_rota_kombini = tum_kombinler[en_kisa_rota_indexi]
         en_kisa_rota = [tum_hedefler[i].tolist() for i in en_kisa_rota_kombini]
         del en_kisa_rota[0]
+
         if self.baslangica_don: 
             en_kisa_rota.append((self.kalkis_enlem,self.kalkis_boylam))
 
         self.en_kisa_rota = en_kisa_rota
-        
-    
+
+        return en_kisa_rota
+
     def run(self):
 
         kalkis_enlem = self.kalkis_enlem
         kalkis_boylam = self.kalkis_boylam
         guncel_enlem = self.gnss.enlem
         guncel_boylam = self.gnss.boylam
-        hedef = self.hedefler[]
-        hedef_enlem = hedef.bolge.enlem
-        hedef_boylam = hedef.bolge.boylam
         irtifa_araliginda = False
-        hedefler = []
-        oncelik = []
-        bitis = None
-
-        for hedef in self.hedefler:
-            if hedef.amac == INIS:
-                bitis = (hedef.bolge.enlem,hedef.bolge.boylam)
-            else:
-                hedefler.append((hedef.bolge.enlem,hedef.bolge.boylam))
-                oncelik.append(hedef.sira)
-
-        
-        #print("hedefler",hedefler)
-        #print("oncelik",oncelik)
-        #print("bitis",bitis)
-
-        
-        if self.barometre.irtifa < 100 and irtifa_araliginda == False:
+  
+        if self.barometre.irtifa < 110 and irtifa_araliginda == False:
             self.yukari_git(HIZLI)     
 
         else:
             irtifa_araliginda = True
-    
+
+        self.rota_olustur()
+        
         #print("imu hiz", self.imu.hiz.x,self.imu.hiz.y,self.imu.hiz.z)
         #print("hedef",hedef_enlem,hedef_boylam)
         #print("kalkis",self.enlem,self.boylam)
         #print("koordinat",guncel_enlem,guncel_boylam)
         
+        
         if irtifa_araliginda == True :
-            self.git(guncel_enlem,guncel_boylam,hedef_enlem,hedef_boylam)
+            self.git(guncel_enlem,guncel_boylam,self.en_kisa_rota[self.i][0],self.en_kisa_rota[self.i][1])
+            print(self.i)
+        self.inis_yap(guncel_enlem,guncel_boylam)
 
-        self.inis_yap(guncel_enlem,guncel_boylam,hedef_enlem,hedef_boylam)
-
+        
 cezeri = Cezeri(id = 1)
-
 
 while robot.is_ok():
 
