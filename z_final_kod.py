@@ -284,6 +284,9 @@ class Cezeri(CezeriParent):
         kalkis_boylam = self.kalkis_boylam
         guncel_enlem = self.gnss.enlem
         guncel_boylam = self.gnss.boylam
+        hedef = self.hedefler[]
+        hedef_enlem = hedef.bolge.enlem
+        hedef_boylam = hedef.bolge.boylam
         irtifa_araliginda = False
         hedefler = []
         oncelik = []
@@ -307,34 +310,16 @@ class Cezeri(CezeriParent):
 
         else:
             irtifa_araliginda = True
-
-        self.rota_olustur(hedefler,oncelik,bitis)
-        
-        
-        
+    
         #print("imu hiz", self.imu.hiz.x,self.imu.hiz.y,self.imu.hiz.z)
         #print("hedef",hedef_enlem,hedef_boylam)
         #print("kalkis",self.enlem,self.boylam)
         #print("koordinat",guncel_enlem,guncel_boylam)
         
         if irtifa_araliginda == True :
-            for hedefx in self.hedefler:
-                print(hedefx.bolge.enlem)
+            self.git(guncel_enlem,guncel_boylam,hedef_enlem,hedef_boylam)
 
-            for hedef in self.en_kisa_rota:
-                hedef_enlem = hedef[0]
-                hedef_boylam = hedef[1]
-            
-            """
-                    if hedefx.bolge.enlem == hedef_enlem and hedefx.bolge.boylam == hedef_boylam:
-                        hedefy = self.hedefler[i]
-                  
-                if hedefy.amac == INIS:
-                    print("inis")
-                    self.inis_yap(guncel_enlem,guncel_boylam,hedef_enlem,hedef_boylam)
-                else:
-                    self.git(guncel_enlem,guncel_boylam,hedef_enlem,hedef_boylam)"""
-
+        self.inis_yap(guncel_enlem,guncel_boylam,hedef_enlem,hedef_boylam)
 
 cezeri = Cezeri(id = 1)
 
