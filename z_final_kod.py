@@ -72,41 +72,81 @@ class Cezeri(CezeriParent):
 
     def git(self,guncel_enlem,guncel_boylam,hedef_enlem,hedef_boylam):
 
+        self.rota_olustur()
+        guncel_enlem=guncel_enlem
+        guncel_boylam=guncel_boylam
+        hedef_enlem=hedef_enlem
+        hedef_boylam=hedef_boylam
+        self.engel_kac(guncel_enlem,guncel_boylam,hedef_enlem,hedef_boylam)
+
         for i, hedef in enumerate(self.hedefler):
             if hedef_enlem == hedef.bolge.enlem and hedef_boylam == hedef.bolge.boylam:
                 hedef = self.hedefler[i]
                 break
 
-        uzaklik = math.sqrt((hedef_enlem-guncel_enlem)**2 + (hedef_boylam-guncel_boylam)**2)
-        self.donus_tamamla(guncel_enlem,guncel_boylam,hedef_enlem,hedef_boylam)
-        if uzaklik < 50:
-            if uzaklik < 30:
-                if uzaklik < 5:
-                    if hedef.amac == INIS:
-                        self.dur()
-                    else:
-                        self.i +=1  
+        if self.yasak==False:
 
-                else: 
-                    self.ileri_git(YAVAS)
-            else:
-                self.ileri_git(ORTA)
-        else: 
-            self.ileri_git(HIZLI)
-        
+            uzaklik = math.sqrt((hedef_enlem-guncel_enlem)**2 + (hedef_boylam-guncel_boylam)**2)
+            self.donus_tamamla(guncel_enlem,guncel_boylam,hedef_enlem,hedef_boylam)
+
+            if uzaklik < 50:
+                if uzaklik < 30:
+                    if uzaklik < 5:
+                        if hedef.amac == INIS:
+                            self.dur()
+                        elif self.i == (len(self.en_kisa_rota) - 1):
+                            self.dur()
+                        else:
+                            self.i +=1  
+
+                    else: 
+                        self.ileri_git(YAVAS)
+                else:
+                    self.ileri_git(ORTA)
+            else: 
+                self.ileri_git(HIZLI)
+            
+        else:
+            uzaklik = math.sqrt((self.durak_enlem-guncel_enlem)**2 + (self.durak_boylam-guncel_boylam)**2)
+            self.donus_tamamla(guncel_enlem,guncel_boylam,self.durak_enlem,self.durak_boylam)
+
+            if uzaklik < 50:
+                if uzaklik < 30:
+                    if uzaklik < 5:
+                        self.dur()
+                    else: 
+                        self.ileri_git(YAVAS)
+                else:
+                    self.ileri_git(ORTA)
+            else: 
+                self.ileri_git(HIZLI)
+
     def inis_yap(self,guncel_enlem,guncel_boylam):
+        self.rota_olustur()
 
         for hedef in self.hedefler:
+
             if hedef.amac == INIS:
                 hedef_enlem = hedef.bolge.enlem
                 hedef_boylam = hedef.bolge.boylam
+                uzaklik = math.sqrt((hedef_enlem-guncel_enlem)**2 + (hedef_boylam-guncel_boylam)**2)
 
-        uzaklik = math.sqrt((hedef_enlem-guncel_enlem)**2 + (hedef_boylam-guncel_boylam)**2)
+                if uzaklik < 5:
+                    self.dur()   
+                    self.asagi_git(YAVAS)
 
-        if uzaklik < 5:
-            self.dur()   
-            self.asagi_git(YAVAS)
-            return True
+            elif self.i == (len(self.en_kisa_rota) - 1):
+                hedef_enlem = self.kalkis_enlem
+                hedef_boylam = self.kalkis_boylam
+
+                uzaklik = math.sqrt((hedef_enlem-guncel_enlem)**2 + (hedef_boylam-guncel_boylam)**2)
+
+                if uzaklik < 5:
+                    self.dur()   
+                    self.asagi_git(YAVAS)
+            
+            else:
+                pass
 
     
 
