@@ -1,15 +1,150 @@
 import numpy as np
+from itertools import permutations, product
 import time
 
-class Cezeri(CezeriParent):    
+class Cezeri(CezeriParent):   
+
     def __init__(self, id = 1):
-        super().__init__(id = id, keyboard = False, sensor_mode = DUZELTILMIS)
-        self.baslangic_bolgesi = self.harita.bolge(self.gnss.enlem, self.gnss.boylam)
-        self.enlem = self.gnss.enlem
-        self.boylam = self.gnss.boylam
+
+        super().__init__(id = id, keyboard = False, sensor_mode = DUZELTILMIS)      
+        self.kalkis_konum = (self.gnss.enlem, self.gnss.boylam)                                  
+        self.kalkis_enlem = self.gnss.enlem
+        self.kalkis_boylam = self.gnss.boylam
         self.gidildi=False
+        self.irtifa_araliginda = False
+        self.i = 0
+        self.gercek_enlem = self.kalkis_enlem
+        self.gercek_boylam = self.kalkis_boylam
+        self.rota_enlem = 0
+        self.rota_boylam = 0
+        self.ilk_zaman = 0
+        self.yasak=False
+        self.sol_yasak=False
+        self.sag_yasak=False
+        
+
+    def gnss_tamir(self):
+        cezeri_hata = False
+        
+        if self.zaman() - self.ilk_zaman >= 1 :
+
+            self.rota_enlem = self.imu.hiz.x
+            self.rota_boylam = self.imu.hiz.z
+            self.gercek_enlem += self.rota_enlem 
+            self.gercek_boylam += self.rota_boylam 
+            self.ilk_zaman = self.zaman()
+
+    def rota_olustur(self):
+
+        hedefler = []
+        oncelik = []
+        bitis = None
+
+        for hedef in self.hedefler:
+            if hedef.amac == INIS:
+                bitis = (hedef.bolge.enlem,hedef.bolge.boylam)
+            else:
+                hedefler.append((hedef.bolge.enlem,hedef.bolge.boylam))
+                oncelik.append(hedef.sira)
+
+        if bitis==None:
+            bitis_koordinat = []
+            bitis_koordinat = np.array(bitis_koordinat)
+
+        else:
+            bitis_koordinat = np.array(bitis)
+
+        baslangic_koordinat = np.array(self.kalkis_konum)
+        
+        hedef_kombinler = []
+        tum_kombinler = []
+        tuples =[]
+        kombin = []
+        mesafeler = []
+        hedefler = np.array(hedefler)
+        oncelik = np.array(oncelik)
+
+        if len(hedefler) == 0 and len(bitis_koordinat) != 0:
+            tum_hedefler = np.vstack((baslangic_koordinat,bitis_koordinat))
+        elif len(hedefler) != 0 and len(bitis_koordinat) == 0:
+            tum_hedefler = np.vstack((baslangic_koordinat,hedefler))
+        elif len(hedefler) != 0 and len(bitis_koordinat) != 0 :
+            tum_hedefler = np.vstack((baslangic_koordinat,hedefler,bitis_koordinat))
+        
+        for i in range(len(tum_hedefler)):
+            mesafe = []
+            for j in range(len(tum_hedefler)):
+
+                """ if self.hiz_kontrol(tum_hedefler[i][0],tum_hedefler[i][1],tum_hedefler[j][0],tum_hedefler[j][1]) == True :
+                    x = np.sqrt((tum_hedefler[i][0] - tum_hedefler[j][0]) ** 2 + (tum_hedefler[i][1] - tum_hedefler[j][1]) ** 2)
+                    a = 1.7*x 
+                else: """
+
+                a = np.sqrt((tum_hedefler[i][0] - tum_hedefler[j][0]) ** 2 + (tum_hedefler[i][1] - tum_hedefler[j][1]) ** 2)
+                mesafe.append(a)
+
+            mesafeler.append(mesafe)
+
+        mesafeler = np.array(mesafeler)
+
+        def oncelik_index(oncelik,bitis_koordinat):
+
+            if len(oncelik)>0:
+                num_priorities = oncelik.max()
+                indexes = []
+                for i in range(1, num_priorities+1):
+                    ind = np.where(oncelik == i)[0]
+                    indexes.append(ind+1)
+
+                zero_ind = np.where(oncelik == 0)[0]
+                if 0 in oncelik:
+                    indexes.append(zero_ind+1)
+
+                baslangic = np.array([0])
+                bitis =  np.array([len(oncelik)+1])
+
+                if len(bitis_koordinat) != 0:
+                    indexes.append(bitis)
+
+                indexes.insert(0,baslangic)
+
+            else:
+                indexes = []
+                baslangic = np.array([0])
+                bitis =  np.array([len(oncelik)+1])
+                indexes.append(bitis)
+                indexes.insert(0,baslangic)
+
+            return indexes
+
+        for indexes in oncelik_index(oncelik,bitis_koordinat):
+            tuples.append(tuple(indexes.tolist()))
+            a=list(permutations(indexes))
+            hedef_kombinler += [a]
+
+        for tpl in product(*hedef_kombinler):
+            combined = ()
+            for i, t in enumerate(tuples):
+                combined += (tpl[i] if len(tpl[i]) > 1 else tpl[i][0],)
+            kombin.append(combined)
 
 
+        for tpl in kombin:
+            new_tpl = tuple([elem for sub_tpl in tpl for elem in (sub_tpl if isinstance(sub_tpl, tuple) else (sub_tpl,))])
+            tum_kombinler.append(new_tpl)
+
+        toplam_mesafe = [sum([mesafeler[tum_kombinler[i][j], tum_kombinler[i][j+1]] for j in range(len(tum_kombinler[i])-1)]) for i in range(len(tum_kombinler))]
+        en_kisa_rota_indexi = np.argmin(toplam_mesafe)
+        en_kisa_rota_kombini = tum_kombinler[en_kisa_rota_indexi]
+        en_kisa_rota = [tum_hedefler[i].tolist() for i in en_kisa_rota_kombini]
+        del en_kisa_rota[0]
+
+        if self.baslangica_don: 
+            en_kisa_rota.append((self.kalkis_enlem,self.kalkis_boylam))
+
+        self.en_kisa_rota = en_kisa_rota
+
+        return en_kisa_rota
 
     def donus_tamamla(self,guncel_enlem,guncel_boylam,hedef_enlem,hedef_boylam):#donus fonksiyonu
  
@@ -37,6 +172,7 @@ class Cezeri(CezeriParent):
 
         if math.radians(hedef_aci)- 0.05 < manyet_veri < math.radians(hedef_aci)+ 0.05 :
             self.dur()
+
         
         else:
 
@@ -58,200 +194,279 @@ class Cezeri(CezeriParent):
 
                 self.don(donus_aci)  
                 
-            elif 0>math.degrees(manyet_veri)>-180 and 0<hedef_aci<180 :         
+            elif 0>math.degrees(manyet_veri)>-180 and 0<hedef_aci<180 :   
+
                 a = math.radians(hedef_aci)-manyet_veri
                 b = a-2*(math.pi)
 
                 if abs(a)<abs(b):
                     donus_aci=a
+
                 else:
                     donus_aci=b
 
                 self.don(donus_aci) 
 
-    
-    def gnss_tamir(self,guncel_enlem,guncel_boylam,zaman):
+    def sag_kontrol(self,kalkis_enlem,kalkis_boylam,hedef_enlem,hedef_boylam,engel_enlem,engel_boylam):                 
 
-        self.gnss_hata = False
-        self.gercek_enlem = self.enlem
-        self.gercek_boylam = self.boylam
+        rota_enlem=(hedef_enlem-kalkis_enlem)/100         
+        rota_boylam=(hedef_boylam-kalkis_boylam)/100               
 
-    
-        if guncel_boylam == 0 and guncel_boylam == 0:
-            self.gnss_hata=True
-            print("hata!")
-            print("gnss",self.gercek_enlem,self.gercek_boylam)
-             
-        else:
-            self.gnss_hata=False
-            print("hata yok") 
-            print("gnss" ,guncel_enlem,guncel_boylam)
-
-        if self.gnss.spoofing == True:
-            self.gnss_hata = True
-            
-            self.gercek_enlem += self.zaman()*self.imu.hiz.x
-            self.gercek_boylam += (self.zaman()*self.imu.hiz.z
-
-    def git(self,guncel_enlem,guncel_boylam,hedef_enlem,hedef_boylam):
-     
-        uzaklik = math.sqrt((hedef_enlem-guncel_enlem)**2 + (hedef_boylam-guncel_boylam)**2)
-        self.donus_tamamla(guncel_enlem,guncel_boylam,hedef_enlem,hedef_boylam)
-        if uzaklik < 50:
-            if uzaklik < 30:
-                if uzaklik < 5:
-                    self.dur()
-                    self.gidildi=True
-                else: 
-                    self.ileri_git(YAVAS)
-            else:
-                self.ileri_git(ORTA)
-        else: 
-            self.ileri_git(HIZLI)
+        sag_enlem = + rota_boylam       
+        sag_boylam = - rota_enlem      
         
-    def inis_yap(self,guncel_enlem,guncel_boylam,hedef_enlem,hedef_boylam):
+        for i in range (100):
+            kontrol = False
+            self.sag_yasak = False
+            engel_enlem = engel_enlem + sag_enlem
+            engel_boylam = engel_boylam + sag_boylam
+            bolge = self.harita.bolge(engel_enlem,engel_boylam)
 
-        uzaklik = math.sqrt((hedef_enlem-guncel_enlem)**2 + (hedef_boylam-guncel_boylam)**2)
+            if bolge.ucusa_yasakli_bolge == False and bolge.ruzgar == False and bolge.trafik == False and bolge.yukselti<80:
+                kontrol_enlem = engel_enlem
+                kontrol_boylam = engel_boylam
+                kk_enlem=(kontrol_enlem - kalkis_enlem )/100 #kalkis_kontrol
+                kk_boylam=(kontrol_boylam -kalkis_boylam)/100
 
-        if uzaklik < 5:
-            self.dur()   
-            self.asagi_git(YAVAS)
-            return True
+                vk_enlem = (hedef_enlem - kontrol_enlem)/100 #varis_kontrol
+                vk_boylam = (hedef_boylam - kontrol_boylam)/100
+
+                for i in range (100):
+                    kalkis_enlem = kalkis_enlem + kk_enlem
+                    kalkis_boylam = kalkis_boylam + kk_boylam
+                    kontrol_enlem = kontrol_enlem + vk_enlem
+                    kontrol_boylam = kontrol_boylam + vk_boylam
+                    bolgex = self.harita.bolge(kalkis_enlem,kalkis_boylam)
+                    bolgey = self.harita.bolge(kontrol_enlem,kontrol_boylam)
 
 
-    def ruzgar(self,kalkis_enlem,kalkis_boylam,hedef_enlem,hedef_boylam):
-        print("ruzgar aranıyor...")
+                    if bolgex.ucusa_yasakli_bolge == True or bolgex.ruzgar == True or bolgex.trafik == True or bolgex.yukselti >=100 or bolgey.ucusa_yasakli_bolge == True or bolgey.ruzgar == True or bolgey.trafik == True or bolgey.yukselti >=100: 
+                        self.sag_yasak = True
+                        kontrol = True
+                        break
 
-        sag_yasak=False
-        sol_yasak=False
-        self.yasak=False
-        ruzgar_bolge =[]
+                    if i == 99:
+                        kontrol = True
+                        break
+
+            if kontrol == True:
+                if self.sag_yasak == True:
+                    self.sag_durak_enlem = round(engel_enlem,1)
+                    self.sag_durak_boylam = round(engel_boylam,1)
+                    continue
+                else:
+                    self.sag_durak_enlem = round(engel_enlem,1)
+                    self.sag_durak_boylam = round(engel_boylam,1)
+                    break
+
+
+    def sol_kontrol(self,kalkis_enlem,kalkis_boylam,hedef_enlem,hedef_boylam,engel_enlem,engel_boylam):
         
-        rota_enlem=(hedef_enlem-kalkis_enlem)/40
-        rota_boylam=(hedef_boylam-kalkis_boylam)/40
+        rota_enlem=(hedef_enlem-kalkis_enlem)/100
+        rota_boylam=(hedef_boylam-kalkis_boylam)/100
 
-        sag_enlem = + rota_boylam
-        sag_boylam = - rota_enlem
-
-        sol_enlem = -rota_boylam
-        sol_boylam = +rota_enlem
+        sol_enlem = - rota_boylam
+        sol_boylam = + rota_enlem
         
-        for i in range (40):
-            kalkis_enlem = kalkis_enlem + rota_enlem
-            kalkis_boylam = kalkis_boylam + rota_boylam
-            bolge = self.harita.bolge(kalkis_enlem, kalkis_boylam)
+        for i in range (100):
+            self.sol_yasak=False
+            kontrol = False
+            engel_enlem = engel_enlem + sol_enlem
+            engel_boylam = engel_boylam + sol_boylam
+            bolge = self.harita.bolge(engel_enlem,engel_boylam)
+           
 
-            if bolge.ruzgar == True:
-                print("ruzgar bulundu")
-                ruzgar_bolge.append([kalkis_enlem,kalkis_boylam])
-                engel_sag_enlem=ruzgar_bolge[0][0]
-                engel_sag_boylam=ruzgar_bolge[0][1]
-                
-                engel_sol_enlem=ruzgar_bolge[0][0]
-                engel_sol_boylam=ruzgar_bolge[0][1]
+            if bolge.ucusa_yasakli_bolge == False and bolge.ruzgar == False and bolge.trafik == False and bolge.yukselti<80:
+                kontrol_enlem = engel_enlem
+                kontrol_boylam = engel_boylam
+                kk_enlem=(kontrol_enlem - kalkis_enlem )/100 #kalkis_kontrol
+                kk_boylam=(kontrol_boylam - kalkis_boylam)/100
+                vk_enlem = (hedef_enlem - kontrol_enlem)/100 #varis_kontrol
+                vk_boylam = (hedef_boylam - kontrol_boylam)/100
 
-                for i in range (10):
-                    engel_sag_enlem = engel_sag_enlem+sag_enlem
-                    engel_sag_boylam = engel_sag_boylam+sag_boylam
-                    bolge_sag = self.harita.bolge(engel_sag_enlem,engel_sag_boylam)
+                for i in range (100):
+                    kalkis_enlem = kalkis_enlem + kk_enlem
+                    kalkis_boylam = kalkis_boylam + kk_boylam
+                    kontrol_enlem = kontrol_enlem + vk_enlem
+                    kontrol_boylam = kontrol_boylam + vk_boylam
+                    bolgex = self.harita.bolge(kalkis_enlem,kalkis_boylam)
+                    bolgey = self.harita.bolge(kontrol_enlem,kontrol_boylam)
 
-                    if bolge_sag.ruzgar == False:
-                        sag_durak_enlem=engel_sag_enlem
-                        sag_durak_boylam=engel_sag_boylam 
-                        sag_x_enlem=engel_sag_enlem
-                        sag_x_boylam=engel_sag_boylam
-                        rota_sag_enlem=(hedef_enlem-sag_x_enlem)/40
-                        rota_sag_boylam=(hedef_boylam-sag_x_boylam)/40
-                    
-                for i in range (10):
-                    engel_sol_enlem += sol_enlem
-                    engel_sol_boylam += sol_boylam
-                    bolge_sol = self.harita.bolge(engel_sol_enlem,engel_sol_boylam)
-
-                    if bolge_sol.ruzgar==False:
-                        sol_durak_enlem=engel_sol_enlem
-                        sol_durak_boylam=engel_sol_boylam
-                        sol_x_enlem=engel_sol_enlem
-                        sol_x_boylam=engel_sol_boylam
-                        rota_sol_enlem=(hedef_enlem-sol_x_enlem)/40
-                        rota_sol_boylam=(hedef_boylam-sol_x_boylam)/40
-                                
-                for i in range (40):
-                    sag_x_enlem = sag_x_enlem+rota_sag_enlem
-                    sag_x_boylam = sag_x_boylam+rota_sag_boylam
-                    bolgey = self.harita.bolge(sag_x_enlem,sag_x_boylam)
-
-                    if bolgey.ruzgar==True: 
-                        sag_yasak=True
+                    if bolgex.ucusa_yasakli_bolge == True or bolgex.ruzgar == True or bolgex.trafik == True or bolgex.yukselti >=100 or bolgey.ucusa_yasakli_bolge == True or bolgey.ruzgar == True or bolgey.trafik == True or bolgey.yukselti >=100: 
+                        self.sol_yasak = True 
+                        kontrol = True
+                        break
                         
-                    sol_x_enlem = sol_x_enlem+rota_sol_enlem
-                    sol_x_boylam = sol_x_boylam+rota_sol_boylam
-                    bolgez = self.harita.bolge(sol_x_enlem,sol_x_boylam)
+                    if i == 99:
+                        kontrol = True
+                        break
 
-                    if bolgez.ruzgar==True: 
-                        sol_yasak=True      
-                      
-                    if i==39:
-                        self.yasak=True 
+            if kontrol == True:
+                if self.sol_yasak == True:
+                    self.sol_durak_enlem = round(engel_enlem,1)
+                    self.sol_durak_boylam = round(engel_boylam,1)
+                    continue
+                else:
+                    self.sol_durak_enlem = round(engel_enlem,1)
+                    self.sol_durak_boylam = round(engel_boylam,1)
+                    break
+                     
+    def engel_kac (self,guncel_enlem,guncel_boylam,hedef_enlem,hedef_boylam):
+        
+        engel_bolge = []
+        
+        rota_enlem=(hedef_enlem-guncel_enlem)/100
+        rota_boylam=(hedef_boylam-guncel_boylam)/100                    
 
-        if self.yasak==True:
-            print("yasak")
-            if sag_yasak==False:
-                #sagdan git
-                self.durak_enlem=sag_durak_enlem
-                self.durak_boylam=sag_durak_boylam
+        for i in range (100):
+            guncel_enlem = guncel_enlem + rota_enlem
+            guncel_boylam = guncel_boylam + rota_boylam
+            bolge = self.harita.bolge(guncel_enlem, guncel_boylam)
+
+            if bolge.ucusa_yasakli_bolge == True or bolge.ruzgar ==True or bolge.trafik == True or bolge.yukselti>=100 :
+                #print("yasak")
+                self.yasak=True
+                engel_bolge.append([guncel_enlem,guncel_boylam])
+                engel_enlem=engel_bolge[0][0]
+                engel_boylam=engel_bolge[0][1]
+
+                self.sag_kontrol(guncel_enlem,guncel_boylam,hedef_enlem,hedef_boylam,engel_enlem,engel_boylam)
+                self.sol_kontrol(guncel_enlem,guncel_boylam,hedef_enlem,hedef_boylam,engel_enlem,engel_boylam)
+                
+                
+                k_sag = math.sqrt((self.sag_durak_enlem- round(guncel_enlem,1) )**2 + (self.sag_durak_boylam- round(guncel_boylam,1) )**2)
+                v_sag = math.sqrt((self.sag_durak_enlem-hedef_enlem)**2 + (self.sag_durak_boylam-hedef_boylam)**2)
+
+                k_sol = math.sqrt((self.sol_durak_enlem-round(guncel_enlem,1))**2 + (self.sol_durak_boylam-round(guncel_boylam,1) )**2)
+                v_sol = math.sqrt((self.sol_durak_enlem-hedef_enlem)**2 + (self.sol_durak_boylam-hedef_boylam)**2)
+
+                sag_uzaklik = k_sag + v_sag     
+                sol_uzaklik = k_sol + v_sol     
+
+                if abs(sol_uzaklik - sag_uzaklik)<=30 and sol_uzaklik > sag_uzaklik:
+                    print("sol")
+                    self.durak_enlem = self.sol_durak_enlem
+                    self.durak_boylam = self.sol_durak_boylam
+
+                elif sol_uzaklik < sag_uzaklik:
+                    print("sol")
+                    self.durak_enlem = self.sol_durak_enlem
+                    self.durak_boylam = self.sol_durak_boylam
+
+                else:
+                    print("sag")
+                    self.durak_enlem = self.sag_durak_enlem
+                    self.durak_boylam = self.sag_durak_boylam
+
+                #print("engel",engel_enlem,engel_boylam)
+                #print("sag durak", self.sag_durak_enlem , self.sag_durak_boylam)
+                #print("sol durak", self.sol_durak_enlem , self.sol_durak_boylam)
+
+            
+    def git(self,guncel_enlem,guncel_boylam,hedef_enlem,hedef_boylam):
+
+        self.rota_olustur()
+        self.engel_kac(guncel_enlem,guncel_boylam,hedef_enlem,hedef_boylam)
+        
+        for i, hedef in enumerate(self.hedefler):
+            if hedef_enlem == hedef.bolge.enlem and hedef_boylam == hedef.bolge.boylam:
+                hedef = self.hedefler[i]
+                break
+
+        if self.yasak == False:
+            uzaklik = math.sqrt((hedef_enlem-guncel_enlem)**2 + (hedef_boylam-guncel_boylam)**2)
+            self.donus_tamamla(guncel_enlem,guncel_boylam,hedef_enlem,hedef_boylam)
+
+            if uzaklik < 50:
+                if uzaklik < 30:
+                    if uzaklik < 5:
+                        if hedef.amac == INIS:
+                            self.dur()
+                        elif self.i == (len(self.en_kisa_rota) - 1):
+                            self.dur()
+                        else:
+                            self.i +=1  
+
+                        self.engel_kac(guncel_enlem,guncel_boylam,hedef_enlem,hedef_boylam)
+                    else: 
+                        self.ileri_git(YAVAS)
+                else:
+                    self.ileri_git(ORTA)
+            else: 
+                self.ileri_git(HIZLI)
+        
+        else:
+            uzaklik = math.sqrt((self.durak_enlem-guncel_enlem)**2 + (self.durak_boylam-guncel_boylam)**2)
+            self.donus_tamamla(guncel_enlem,guncel_boylam,self.durak_enlem,self.durak_boylam)
+            
+            if uzaklik < 60:
+                if uzaklik < 20:
+                    if uzaklik < 5:     
+                        self.yasak=False
+                    else: 
+                        self.ileri_git(YAVAS)
+                else:
+                    self.ileri_git(ORTA)
+            else: 
+                self.ileri_git(HIZLI)
+
+    def inis_yap(self,guncel_enlem,guncel_boylam):
+        self.rota_olustur()
+
+        for hedef in self.hedefler:
+
+            if hedef.amac == INIS:
+                hedef_enlem = hedef.bolge.enlem
+                hedef_boylam = hedef.bolge.boylam
+
+                uzaklik = math.sqrt((hedef_enlem-guncel_enlem)**2 + (hedef_boylam-guncel_boylam)**2)
+
+                if uzaklik < 5:
+                    self.dur()   
+                    self.asagi_git(YAVAS)
+
+            elif self.i == (len(self.en_kisa_rota) - 1):
+
+                hedef_enlem = self.kalkis_enlem
+                hedef_boylam = self.kalkis_boylam
+
+                uzaklik = math.sqrt((hedef_enlem-guncel_enlem)**2 + (hedef_boylam-guncel_boylam)**2)
+
+                if uzaklik < 5:
+                    self.dur()   
+                    self.asagi_git(YAVAS)
             else:
-                #soldan git
-                self.durak_enlem=sol_durak_enlem
-                self.durak_boylam=sol_durak_boylam
-
-            print("durak",self.durak_enlem,self.durak_boylam)
+                pass
     
     def run(self):
 
-        kalkis_enlem = self.enlem
-        kalkis_boylam = self.boylam
-        hedef = self.hedefler[0]
-        hedef_enlem = hedef.bolge.enlem
-        hedef_boylam = hedef.bolge.boylam
+        kalkis_enlem = self.kalkis_enlem
+        kalkis_boylam = self.kalkis_boylam
         guncel_enlem = self.gnss.enlem
         guncel_boylam = self.gnss.boylam
-        irtifa_araliginda = False
         
-        if self.barometre.irtifa < 100 and irtifa_araliginda == False:
+        if self.barometre.irtifa < 80 and self.irtifa_araliginda == False:
             self.yukari_git(HIZLI)     
 
         else:
-            irtifa_araliginda = True
+            self.irtifa_araliginda = True
 
+        self.rota_olustur()
+
+        #print("hesaplanan koordinat" , self.gercek_enlem,self.gercek_boylam)
+        #print("guncel koordinat", self.gnss.enlem,self.gnss.boylam)
         #print("imu hiz", self.imu.hiz.x,self.imu.hiz.y,self.imu.hiz.z)
         #print("hedef",hedef_enlem,hedef_boylam)
         #print("kalkis",self.enlem,self.boylam)
         #print("koordinat",guncel_enlem,guncel_boylam)
-        print("zaman",self.zaman())
-        print("hesaplama",self.gercek_enlem,self.gercek_boylam)
-
-        self.ruzgar(kalkis_enlem,kalkis_boylam,hedef_enlem,hedef_boylam)
-
-        if irtifa_araliginda == True and self.yasak==False :
-            self.git(guncel_enlem,guncel_boylam,hedef_enlem,hedef_boylam)
-
-        elif irtifa_araliginda == True and self.yasak==True: 
-            durak_enlem=self.durak_enlem
-            durak_boylam=self.durak_boylam 
-
-            if self.gidildi:
-
-                self.git(guncel_enlem,guncel_boylam,hedef_enlem,hedef_boylam)
-            else:    
-                self.git(guncel_enlem,guncel_boylam,durak_enlem,durak_boylam)
-
-        self.inis_yap(guncel_enlem,guncel_boylam,hedef_enlem,hedef_boylam)
-
+        
+        if self.irtifa_araliginda == True :
+            self.git(guncel_enlem,guncel_boylam,self.en_kisa_rota[self.i][0],self.en_kisa_rota[self.i][1])
+            self.inis_yap(guncel_enlem,guncel_boylam)
+            
 
 
 cezeri = Cezeri(id = 1)
-
 
 while robot.is_ok():
 
