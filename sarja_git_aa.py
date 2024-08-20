@@ -1,12 +1,11 @@
 
 
 
-def sarj_hesap () 
+def sarj_hesap (self,guncel_enlem,guncel_boylam,hedef_enlem,hedef_boylam) 
     print(self.batarya)
 
     #Tanımlar 
     uzaklik = math.sqrt((hedef_enlem-guncel_enlem)**2 + (hedef_boylam-guncel_boylam)**2)
-    mutlak_hedef 
     uzaklik_sarj
 
     #hesaplanması gerekenler
@@ -16,14 +15,23 @@ def sarj_hesap ()
     al = self.batarya.veri - ((uzaklik-50)* hızlı_giderken_harcadigi_sarj) - kaplan - aktas 
     hızlı_giderken_harcadigi_sarj = 0.0894736842
     if uzaklik > 50: 
-        if al < 25:
-            self.dur()
-            sarj_azaldi 
-        elif  al - (uzakllik_sarj * gereklisabitler) < 25: 
-            self.dur()
-            sarj_azaldi
-        else 
-            #sorun yok
-
+        if hedef.amac == INIS:
+            if al-kaplan < 25:
+                self.dur()
+                sarj_azaldi 
+            elif  al -kaplan - (uzakllik_sarj * gereklisabitler) < 25: 
+                self.dur()
+                sarj_azaldi
+            else 
+                #sorun yok
+        else:
+            if al < 25:
+                self.dur()
+                sarj_azaldi 
+            elif  al - (uzakllik_sarj * gereklisabitler) < 25: 
+                self.dur()
+                sarj_azaldi
+            else 
+                #sorun yok
 
 def sarj_azaldi():
