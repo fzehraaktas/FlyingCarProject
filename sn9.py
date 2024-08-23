@@ -195,7 +195,7 @@ class Cezeri(CezeriParent):
         en_kisa_rota_indexi = np.argmin(toplam_mesafe)
         en_kisa_rota_kombini = tum_kombinler[en_kisa_rota_indexi]
         en_kisa_rota = [tum_hedefler[i].tolist() for i in en_kisa_rota_kombini]
-        del en_kisa_rota[0]
+        
 
         if self.baslangica_don: 
             en_kisa_rota.append((self.kalkis_enlem,self.kalkis_boylam))
