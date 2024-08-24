@@ -376,14 +376,14 @@ class Cezeri(CezeriParent):
         rota_enlem=(hedef_enlem-guncel_enlem)/100
         rota_boylam=(hedef_boylam-guncel_boylam)/100         
 
-        print("hedef",hedef_enlem,hedef_boylam)           
+        #print("hedef",hedef_enlem,hedef_boylam)           
 
         for i in range (100):
             guncel_enlem = guncel_enlem + rota_enlem
             guncel_boylam = guncel_boylam + rota_boylam
             bolge = self.harita.bolge(guncel_enlem, guncel_boylam)
 
-            if bolge.ucusa_yasakli_bolge == True or bolge.ruzgar ==True or bolge.trafik == True or bolge.yukselti>=100 :
+            if bolge.ucusa_yasakli_bolge == True or bolge.ruzgar == True or bolge.trafik == True or bolge.yukselti>=100 :
                 #print("yasak")
                 engel_bolge.append([guncel_enlem,guncel_boylam])
                 engel_enlem=engel_bolge[0][0]
@@ -404,12 +404,11 @@ class Cezeri(CezeriParent):
 
                 """
                 if abs(sol_uzaklik - sag_uzaklik)<= 30 and sol_uzaklik > sag_uzaklik:
-                    print("sol")
+                    #print("sol")
                     self.durak_enlem = self.sol_durak_enlem
                     self.durak_boylam = self.sol_durak_boylam
+                    self.yasak = True"""
                  
-                """
-              
                 if sol_uzaklik < sag_uzaklik:
                     #print("sol")
                     self.durak_enlem = self.sol_durak_enlem
@@ -459,34 +458,29 @@ class Cezeri(CezeriParent):
                 hedef = self.hedefler[i]
                 break
 
-        yakin_sarj = 7
         inis_sarj = (self.barometre.irtifa - bolge.yukselti) * 0.22 
-        kalacak_sarj = self.batarya.veri - ((uzaklik-50)* 0.089) - yakin_sarj 
+        kalacak_sarj = self.batarya.veri - (uzaklik *0.075)
+        print("kalacak_sarj",kalacak_sarj)
 
-        if uzaklik > 50: 
-            if hedef.amac == INIS:
-                if kalacak_sarj-inis_sarj < 25:
-                    self.en_yakin_sarj_istasyonuna_git = True
-                elif  kalacak_sarj -inis_sarj - (uzaklik2_sarj *0.089 ) < 30: 
-                    self.en_yakin_sarj_istasyonuna_git = True
-                else: 
-                    pass
-            else:
-                if kalacak_sarj < 25:
-                    self.en_yakin_sarj_istasyonuna_git = True
-                elif  kalacak_sarj - (uzaklik2_sarj * 0.089) < 30: 
-                    self.en_yakin_sarj_istasyonuna_git = True
-                else : 
-                    pass
+        
+        if hedef.amac == INIS:
+            if kalacak_sarj-inis_sarj < 25:
+                self.en_yakin_sarj_istasyonuna_git = True
+
+            else: 
+                pass
+
+        else:
+            if kalacak_sarj < 25:
+                self.en_yakin_sarj_istasyonuna_git = True
+
+            else: 
+                pass
                            
-        else: 
-            pass
-            #print("KAPLAN")
-
     def en_yakin_sarj_istasyonu(self, guncel_enlem, guncel_boylam, hedef_enlem, hedef_boylam):
 
         self.sarj_hesap (guncel_enlem,guncel_boylam,hedef_enlem,hedef_boylam)
-        sarj_menzili = ((self.batarya.veri - 40) - 7) / 0.089
+        sarj_menzili = self.batarya.veri/0.13
         uygun_istasyonlar = []
         en_iyi_istasyon = None
     
@@ -546,13 +540,13 @@ class Cezeri(CezeriParent):
                 break
         
         self.engel_kac(guncel_enlem,guncel_boylam,hedef_enlem,hedef_boylam)
-        print("YASAK :",self.yasak)
+        #print("YASAK :",self.yasak)
 
         if self.yasak == False :
-            print("hedefe gidiyoz")
+            #print("hedefe gidiyoz")
             self.donus_tamamla(guncel_enlem,guncel_boylam,hedef_enlem,hedef_boylam)
             uzaklik = math.sqrt((hedef_enlem-guncel_enlem)**2 + (hedef_boylam-guncel_boylam)**2)
-            #print(uzaklik)
+
             if uzaklik < 20:
                 if uzaklik < 5:
                     if hedef.amac == INIS:
@@ -567,7 +561,6 @@ class Cezeri(CezeriParent):
 
                         if  self.batarya.veri == 100:
                             self.en_yakin_sarj_istasyonuna_git = False
-
                             self.irtifa_araliginda = False 
            
                         else:
@@ -598,12 +591,12 @@ class Cezeri(CezeriParent):
         elif self.yasak == True:
             #print("engel")
              
-            uzaklik_engel = math.sqrt((self.durak_enlem-guncel_enlem)**2 + (self.durak_boylam-guncel_boylam)**2)
+            uzaklik = math.sqrt((self.durak_enlem-guncel_enlem)**2 + (self.durak_boylam-guncel_boylam)**2)
             self.donus_tamamla(guncel_enlem,guncel_boylam,self.durak_enlem,self.durak_boylam)
-            print(uzaklik_engel)
-                 
-            if uzaklik_engel < 10:
-                if uzaklik_engel < 7:  
+            #print(uzaklik)
+                
+            if uzaklik < 10:
+                if uzaklik < 3:  
                     self.yasak = False
                 else: 
                     self.ileri_git(YAVAS)
@@ -645,9 +638,11 @@ class Cezeri(CezeriParent):
         kalkis_boylam = self.kalkis_boylam
         guncel_enlem = self.gnss.enlem
         guncel_boylam = self.gnss.boylam
+        kalkis_zaman = 0
         
         if self.barometre.irtifa < 100 and self.irtifa_araliginda == False:
             self.yukari_git(HIZLI)     
+            kalkis_zaman = self.zaman()
 
         else:
             self.dur()
@@ -660,6 +655,9 @@ class Cezeri(CezeriParent):
 
         self.rota_olustur()
         self.hastane(guncel_enlem,guncel_boylam)
+        hiz = math.sqrt((self.imu.hiz.x)**2 + (self.imu.hiz.z)**2)
+        #print("zaman",kalkis_zaman)
+        #print("hız",hiz)
 
         #self.gnss_tamir()      
         #print("acil",self.acil)
@@ -677,11 +675,14 @@ class Cezeri(CezeriParent):
         for i, hastane in enumerate(self.harita.hastaneler):
             print("hastane:",i,hastane.enlem,hastane.boylam) """
 
+
         if self.irtifa_araliginda == True :
+            
             self.git(guncel_enlem,guncel_boylam,self.en_kisa_rota[self.i][0],self.en_kisa_rota[self.i][1])
             
 
-cezeri = Cezeri(id = 1)
+cezeri_1 = Cezeri(id = 1)
+
 while robot.is_ok():
 
-    (cezeri.run())
+    (cezeri_1.run())
