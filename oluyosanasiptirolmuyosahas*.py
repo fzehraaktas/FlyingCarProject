@@ -458,7 +458,7 @@ class Cezeri(CezeriParent):
                 hedef = self.hedefler[i]
                 break
 
-        inis_sarj = (self.barometre.irtifa - bolge.yukselti) * 0.22 
+        inis_sarj = (self.barometre.irtifa - bolge.yukselti) * 0.15 
         kalacak_sarj = self.batarya.veri - (uzaklik *0.075)
         print("kalacak_sarj",kalacak_sarj)
 
