@@ -8,6 +8,7 @@ class Cezeri(CezeriParent):
     def __init__(self, id = 1):
 
         super().__init__(id = id, keyboard = False, sensor_mode = DUZELTILMIS)      
+        self.kalkis = self.harita.bolge(self.gnss.enlem, self.gnss.boylam)
         self.kalkis_konum = (self.gnss.enlem, self.gnss.boylam)                                  
         self.kalkis_enlem = self.gnss.enlem
         self.kalkis_boylam = self.gnss.boylam
@@ -29,6 +30,9 @@ class Cezeri(CezeriParent):
         self.en_yakin_sarj_istasyonuna_git = False
         self.guncel_enlem=self.gnss.enlem
         self.guncel_boylam=self.gnss.boylam
+        self.irtifa = 0 
+        self.imu_yuksel = 0
+        self.son_irtifa = 0
 
     def motor_ariza(self,guncel_enlem,guncel_boylam):
 
@@ -402,9 +406,6 @@ class Cezeri(CezeriParent):
     def sarj_hesap (self,guncel_enlem,guncel_boylam,hedef_enlem,hedef_boylam) :
 
         self.rota_olustur()
-        sonraki_hedef_enlem , sonraki_hedef_boylam = self.en_kisa_rota[self.i + 1 ][0],self.en_kisa_rota[self.i + 1][1]
-        sonraki_hedef_uzaklik = math.sqrt((hedef_enlem-sonraki_hedef_enlem)**2 + (hedef_boylam-sonraki_hedef_boylam)**2) 
-
         self.hedefe_en_yakin_sarj_istasyonu(hedef_enlem, hedef_boylam)
         uzaklik = math.sqrt((hedef_enlem-guncel_enlem)**2 + (hedef_boylam-guncel_boylam)**2) 
         sarj_uzaklik = math.sqrt((hedef_enlem-self.sarj2_enlem)**2 + (hedef_boylam-self.sarj2_boylam)**2)  
@@ -414,60 +415,63 @@ class Cezeri(CezeriParent):
             if hedef_enlem == hedef.bolge.enlem and hedef_boylam == hedef.bolge.boylam:
                 hedef = self.hedefler[i]
                 break
+            else:
+                pass
 
-        inis_sarj = (self.barometre.irtifa - bolge.yukselti) * 0.15 
+
+        inis_sarj = (self.barometre.irtifa - bolge.yukselti) * 0.15
         kalacak_sarj = self.batarya.veri - (uzaklik *0.075)
         harcanacak_sarj = kalacak_sarj - (sarj_uzaklik *0.075)
-        sonraki_sarj = kalacak_sarj - (sonraki_hedef_uzaklik *0.075)
-
 
         if hedef.amac == INIS:     
             kalacak_sarj = kalacak_sarj - inis_sarj
+            harcanacak_sarj = harcanacak_sarj - inis_sarj
         else:
             pass
 
-        if kalacak_sarj < 25 :
+        if kalacak_sarj < 21 :
             self.en_yakin_sarj_istasyonuna_git = True
 
-        elif harcanacak_sarj < 25 and sonraki_sarj < 25 :
+        elif harcanacak_sarj < 21 and hedef.amac == ZIYARET :
             self.en_yakin_sarj_istasyonuna_git = True
-
-        elif harcanacak_sarj > 25 and sonraki_sarj < 25:
-            self.en_yakin_sarj_istasyonuna_git = True 
-
-        else:
+            
+        else: 
             pass
-
-
 
         #print("kalacak_sarj",kalacak_sarj,"sarja git:",self.en_yakin_sarj_istasyonuna_git)
+        #print("harcanacak_sarj",harcanacak_sarj)
                            
-    def en_yakin_sarj_istasyonu(self, guncel_enlem, guncel_boylam, hedef_enlem, hedef_boylam):
-
-        self.sarj_hesap (guncel_enlem,guncel_boylam,hedef_enlem,hedef_boylam)
-        sarj_menzili = self.batarya.veri/0.13
+    def en_yakin_sarj_istasyonu(self,guncel_enlem, guncel_boylam, hedef_enlem, hedef_boylam):
+                
+        self.sarj_hesap(guncel_enlem,guncel_boylam,hedef_enlem,hedef_boylam)
         uygun_istasyonlar = []
         en_iyi_istasyon = None
-    
+            
         for istasyon in self.harita.sarj_istasyonlari:
-            mesafe = math.sqrt((istasyon.enlem-guncel_enlem)**2 + (istasyon.boylam-guncel_boylam)**2)
-            if mesafe <= sarj_menzili:
+            uzaklik = math.sqrt((istasyon.enlem-guncel_enlem)**2 + (istasyon.boylam-guncel_boylam)**2)
+            sarj_bolge = self.harita.bolge(istasyon.enlem,istasyon.boylam)
+            inis_sarj = (self.barometre.irtifa - sarj_bolge.yukselti) * 0.13
+            kalacak_sarj = self.batarya.veri - (uzaklik *0.075) - inis_sarj
+
+            if kalacak_sarj > 25:
                 uygun_istasyonlar.append(istasyon)
-    
-        en_kisa_mesafe = float('inf')
-    
+            else:
+                continue
+
+        en_kisa_uzaklik = float('inf')
+
         for istasyon in uygun_istasyonlar:
-            toplam_mesafe = math.sqrt((istasyon.enlem-guncel_enlem)**2 + (istasyon.boylam-guncel_boylam)**2)
-            toplam_mesafe += math.sqrt((hedef_enlem- istasyon.enlem)**2 + (hedef_boylam - istasyon.boylam)**2)
-        
-            if toplam_mesafe < en_kisa_mesafe:
-                en_kisa_mesafe = toplam_mesafe
+            toplam_uzaklik = math.sqrt((istasyon.enlem-guncel_enlem)**2 + (istasyon.boylam-guncel_boylam)**2)
+            toplam_uzaklik += math.sqrt((hedef_enlem- istasyon.enlem)**2 + (hedef_boylam - istasyon.boylam)**2)
+            
+            if toplam_uzaklik < en_kisa_uzaklik:
+                en_kisa_uzaklik = toplam_uzaklik
                 en_iyi_istasyon = istasyon
-    
+        
         if en_iyi_istasyon is not None:
             self.sarj_enlem = en_iyi_istasyon.enlem
             self.sarj_boylam = en_iyi_istasyon.boylam
-      
+
     def git(self,guncel_enlem,guncel_boylam,hedef_enlem,hedef_boylam):
 
         self.rota_olustur()
@@ -475,6 +479,8 @@ class Cezeri(CezeriParent):
         self.motor_ariza(guncel_enlem,guncel_boylam)
         self.sarj_hesap(guncel_enlem,guncel_boylam,hedef_enlem,hedef_boylam)
         self.en_yakin_sarj_istasyonu(guncel_enlem, guncel_boylam, hedef_enlem, hedef_boylam)
+        
+
     
         if self.acil == True:
             #print("knk acil bak")
@@ -485,6 +491,7 @@ class Cezeri(CezeriParent):
             print("in")
             bolge = self.harita.bolge(guncel_enlem,guncel_boylam)
             if bolge.inilebilir :
+                self.dur()
                 hedef_enlem = guncel_enlem
                 hedef_boylam = guncel_boylam
 
@@ -516,10 +523,7 @@ class Cezeri(CezeriParent):
                         if self.en_yakin_sarj_istasyonuna_git == True:
                             #print("ha!")
                             self.dur()
-                            if self.lidar.mesafe < 15:
-                                self.asagi_git(YAVAS) 
-                            else:
-                                self.asagi_git(HIZLI) 
+                            self.inis_yap(guncel_enlem,guncel_boylam)
 
                         if  self.batarya.veri == 100:
                             self.en_yakin_sarj_istasyonuna_git = False
@@ -527,10 +531,7 @@ class Cezeri(CezeriParent):
            
                         else:
                             self.dur()
-                            if self.lidar.mesafe < 15:
-                                self.asagi_git(YAVAS) 
-                            else:
-                                self.asagi_git(HIZLI) 
+                            self.inis_yap(guncel_enlem,guncel_boylam)
 
                     elif self.i == (len(self.en_kisa_rota) - 1):
                         print("abo")
@@ -540,7 +541,7 @@ class Cezeri(CezeriParent):
                     elif self.acil_durum:  
                         print("hehe:)")
                         self.dur()
-                        self.asagi_git(YAVAS)   
+                        self.inis_yap(guncel_enlem,guncel_boylam)
 
                     else:  
                         self.i +=1 
@@ -555,58 +556,56 @@ class Cezeri(CezeriParent):
             uzaklik = math.sqrt((self.durak_enlem-guncel_enlem)**2 + (self.durak_boylam-guncel_boylam)**2)
             self.donus_tamamla(guncel_enlem,guncel_boylam,self.durak_enlem,self.durak_boylam)
     
-            if uzaklik < 10:
-                if uzaklik < 5:  
-                    self.yasak = False
-                else: 
-                    self.ileri_git(YAVAS)
+            if uzaklik < 5:  
+                self.yasak = False
             else: 
                 self.ileri_git(HIZLI)
+       
+    def kalkis_yap(self):
+        self.imu_yuksel += (self.imu.hiz.y)/25
 
-    def inis_yap(self,guncel_enlem,guncel_boylam):
+        if ((self.gnss.enlem == 0 and self.gnss.boylam == 0) or self.gnss.spoofing == True) and self.barometre.hata == 1:#ikisi de bozuksa 
+            self.irtifa = self.son_irtifa  + self.imu_yuksel
+            print("ikisi de bozuk")
 
-        self.rota_olustur()
+        elif ((self.gnss.enlem == 0 and self.gnss.boylam == 0) or self.gnss.spoofing == True) and self.barometre.hata == 0:#gnss bozuk 
+            print("gnss bozuk")
+            self.irtifa = self.barometre.irtifa
 
-        for hedef in self.hedefler:
-
-            if hedef.amac == INIS:
-                hedef_enlem = hedef.bolge.enlem
-                hedef_boylam = hedef.bolge.boylam
-
-                uzaklik = math.sqrt((hedef_enlem-guncel_enlem)**2 + (hedef_boylam-guncel_boylam)**2)
-
-                if uzaklik < 5:
-                    self.dur()   
-                    self.asagi_git(YAVAS)
-
-            elif self.i == (len(self.en_kisa_rota) - 1):
-
-                hedef_enlem = self.kalkis_enlem
-                hedef_boylam = self.kalkis_boylam
-
-                uzaklik = math.sqrt((hedef_enlem-guncel_enlem)**2 + (hedef_boylam-guncel_boylam)**2)
-
-                if uzaklik < 5:
-                    self.dur()   
-                    self.asagi_git(YAVAS)
-            else:
-                pass
-    
-    def run(self):
-
-        kalkis_enlem = self.kalkis_enlem
-        kalkis_boylam = self.kalkis_boylam
-        guncel_enlem = self.gnss.enlem
-        guncel_boylam = self.gnss.boylam
-
-        if self.barometre.irtifa < 100 and self.irtifa_araliginda == False:
-            self.yukari_git(HIZLI)     
+        elif self.barometre.hata == 1:#baro bozuk
+            self.irtifa = self.gnss.irtifa
+            print("barobozuk")
 
         else:
-            self.dur()
-            self.irtifa_araliginda = True
+            self.son_irtifa = self.barometre.irtifa
+            self.irtifa = self.barometre.irtifa
+            #print("bozukluk yok")
 
-        self.rota_olustur()
+    def inis_yap(self,guncel_enlem,guncel_boylam):
+        inis = self.harita.bolge(guncel_enlem,guncel_boylam)
+        
+        if self.radar.hata == False and self.lidar.hata == False :#hata yoksa
+            print("bozuk yok")
+            self.mesafe = self.lidar.mesafe
+
+        elif self.radar.hata == True and self.lidar.hata == False:#sadece radar hatası varsa
+            print("radar bozuk")
+            self.mesafe = self.lidar.mesafe
+
+        elif self.radar.hata == False and self.lidar.hata == True:#sadece lidar hatası varsa
+            print("lidar bozuk")
+            self.mesafe = self.radar.mesafe
+
+        else:#ikisi de bozuksa
+            print("ikisi de bozuk")
+            self.mesafe = self.irtifa - inis.yukselti 
+
+        if self.mesafe < 15:
+            self.asagi_git(YAVAS)
+        else:
+            self.asagi_git(HIZLI)
+
+    def run(self):
 
         if (self.gnss.enlem == 0 and self.gnss.boylam == 0) or self.gnss.spoofing == True:
             self.guncel_enlem += (self.imu.hiz.x/30)
@@ -615,14 +614,26 @@ class Cezeri(CezeriParent):
         else:
             self.guncel_enlem=self.gnss.enlem
             self.guncel_boylam=self.gnss.boylam
-            self.ilk_zaman = self.zaman()
 
+        self.kalkis_yap()
+
+        print("hesap",self.irtifa)
+        print("gercek",self.son_irtifa)
+
+        if self.irtifa < 100 and self.irtifa_araliginda == False:
+            self.yukari_git(HIZLI)     
+
+        else:
+            self.dur()
+            self.irtifa_araliginda = True
+
+        self.rota_olustur()
         hedef_enlem , hedef_boylam = self.en_kisa_rota[self.i][0] , self.en_kisa_rota[self.i][1]
-
-        self.hiz_kontrol(guncel_enlem, guncel_boylam, hedef_enlem, hedef_boylam)
+        self.hiz_kontrol(self.guncel_enlem, self.guncel_boylam, hedef_enlem, hedef_boylam)
 
         if self.irtifa_araliginda == True :
             self.git(self.guncel_enlem,self.guncel_boylam,self.en_kisa_rota[self.i][0],self.en_kisa_rota[self.i][1])
+
             
 
 cezeri_1 = Cezeri(id = 1)
