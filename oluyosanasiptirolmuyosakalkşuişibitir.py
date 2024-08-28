@@ -401,7 +401,6 @@ class Cezeri(CezeriParent):
         else:
             pass
 
-
     def sarj_hesap (self,guncel_enlem,guncel_boylam,hedef_enlem,hedef_boylam) :
 
         self.rota_olustur()
@@ -478,8 +477,6 @@ class Cezeri(CezeriParent):
         self.motor_ariza(guncel_enlem,guncel_boylam)
         self.sarj_hesap(guncel_enlem,guncel_boylam,hedef_enlem,hedef_boylam)
         self.en_yakin_sarj_istasyonu(guncel_enlem, guncel_boylam, hedef_enlem, hedef_boylam)
-        
-
     
         if self.acil == True:
             #print("knk acil bak")
@@ -504,7 +501,6 @@ class Cezeri(CezeriParent):
             if hedef_enlem == hedef.bolge.enlem and hedef_boylam == hedef.bolge.boylam:
                 hedef = self.hedefler[i]
                 break
-
 
         #print("hedef",hedef_enlem,hedef_boylam)
         self.engel_kac(guncel_enlem,guncel_boylam,hedef_enlem,hedef_boylam)
@@ -565,15 +561,15 @@ class Cezeri(CezeriParent):
 
         if ((self.gnss.enlem == 0 and self.gnss.boylam == 0) or self.gnss.spoofing == True) and self.barometre.hata == 1:#ikisi de bozuksa 
             self.irtifa = self.son_irtifa  + self.imu_yuksel
-            print("ikisi de bozuk")
+            #print("ikisi de bozuk")
 
         elif ((self.gnss.enlem == 0 and self.gnss.boylam == 0) or self.gnss.spoofing == True) and self.barometre.hata == 0:#gnss bozuk 
-            print("gnss bozuk")
+            #print("gnss bozuk")
             self.irtifa = self.barometre.irtifa
 
         elif self.barometre.hata == 1:#baro bozuk
             self.irtifa = self.gnss.irtifa
-            print("barobozuk")
+            #print("barobozuk")
 
         else:
             self.son_irtifa = self.barometre.irtifa
@@ -583,23 +579,23 @@ class Cezeri(CezeriParent):
     def inis_yap(self,guncel_enlem,guncel_boylam):
         inis = self.harita.bolge(guncel_enlem,guncel_boylam)
         
-        if self.radar.hata == False and self.lidar.hata == False :#hata yoksa
-            print("bozuk yok")
+        if self.radar.hata == 0 and self.lidar.hata == 0 :#hata yoksa
+            #print("bozuk yok")
             self.mesafe = self.lidar.mesafe
 
-        elif self.radar.hata == True and self.lidar.hata == False:#sadece radar hatası varsa
-            print("radar bozuk")
+        elif self.radar.hata == 1 and self.lidar.hata == 0:#sadece radar hatası varsa
+            #print("radar bozuk")
             self.mesafe = self.lidar.mesafe
 
-        elif self.radar.hata == False and self.lidar.hata == True:#sadece lidar hatası varsa
-            print("lidar bozuk")
+        elif self.radar.hata == 0 and self.lidar.hata == 1:#sadece lidar hatası varsa
+            #print("lidar bozuk")
             self.mesafe = self.radar.mesafe
 
         else:#ikisi de bozuksa
-            print("ikisi de bozuk")
+            #print("ikisi de bozuk")
             self.mesafe = self.irtifa - inis.yukselti 
 
-        if self.mesafe < 15:
+        if self.mesafe < 10:
             self.asagi_git(YAVAS)
         else:
             self.asagi_git(HIZLI)
@@ -616,15 +612,15 @@ class Cezeri(CezeriParent):
 
         self.kalkis_yap()
 
-        print("hesap",self.irtifa)
-        print("gercek",self.son_irtifa)
-
         if self.irtifa < 100 and self.irtifa_araliginda == False:
             self.yukari_git(HIZLI)     
 
         else:
             self.dur()
             self.irtifa_araliginda = True
+
+        bolge = self.harita.bolge(self.guncel_enlem,self.guncel_boylam)
+        print("yukselti", bolge.yukselti)
 
         self.rota_olustur()
         hedef_enlem , hedef_boylam = self.en_kisa_rota[self.i][0] , self.en_kisa_rota[self.i][1]
@@ -634,16 +630,10 @@ class Cezeri(CezeriParent):
             self.engel_kac(self.guncel_enlem,self.guncel_boylam,self.en_kisa_rota[self.i][0],self.en_kisa_rota[self.i][1])
             self.git(self.guncel_enlem,self.guncel_boylam,self.en_kisa_rota[self.i][0],self.en_kisa_rota[self.i][1])
 
-            
-
 cezeri_1 = Cezeri(id = 1)
-cezeri_2 = Cezeri(id = 2)
-cezeri_3 = Cezeri(id = 3)
 
 while robot.is_ok():
 
     (cezeri_1.run())
-    robot.is_ok()
-    (cezeri_2.run())
-    robot.is_ok()
-    (cezeri_3.run())
+
+
