@@ -301,7 +301,6 @@ class Cezeri(CezeriParent):
             engel_enlem = engel_enlem + sol_enlem
             engel_boylam = engel_boylam + sol_boylam
             bolge = self.harita.bolge(engel_enlem,engel_boylam)
-           
 
             if bolge.ucusa_yasakli_bolge == False and bolge.ruzgar == False and bolge.trafik == False and bolge.yukselti<100:
                 kontrol_enlem = engel_enlem
@@ -632,12 +631,19 @@ class Cezeri(CezeriParent):
         self.hiz_kontrol(self.guncel_enlem, self.guncel_boylam, hedef_enlem, hedef_boylam)
 
         if self.irtifa_araliginda == True :
+            self.engel_kac(self.guncel_enlem,self.guncel_boylam,self.en_kisa_rota[self.i][0],self.en_kisa_rota[self.i][1])
             self.git(self.guncel_enlem,self.guncel_boylam,self.en_kisa_rota[self.i][0],self.en_kisa_rota[self.i][1])
 
             
 
 cezeri_1 = Cezeri(id = 1)
+cezeri_2 = Cezeri(id = 2)
+cezeri_3 = Cezeri(id = 3)
 
 while robot.is_ok():
 
     (cezeri_1.run())
+    robot.is_ok()
+    (cezeri_2.run())
+    robot.is_ok()
+    (cezeri_3.run())
