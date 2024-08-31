@@ -627,7 +627,6 @@ class Cezeri(CezeriParent):
         self.hiz_kontrol(self.guncel_enlem, self.guncel_boylam, hedef_enlem, hedef_boylam)
 
         if self.irtifa_araliginda == True :
-            self.engel_kac(self.guncel_enlem,self.guncel_boylam,self.en_kisa_rota[self.i][0],self.en_kisa_rota[self.i][1])
             self.git(self.guncel_enlem,self.guncel_boylam,self.en_kisa_rota[self.i][0],self.en_kisa_rota[self.i][1])
 
 cezeri_1 = Cezeri(id = 1)
