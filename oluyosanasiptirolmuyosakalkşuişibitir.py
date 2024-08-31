@@ -33,6 +33,7 @@ class Cezeri(CezeriParent):
         self.irtifa = 0 
         self.imu_yuksel = 0
         self.son_irtifa = 0
+        self.yavas_git = False
 
     def motor_ariza(self,guncel_enlem,guncel_boylam):
 
@@ -52,10 +53,9 @@ class Cezeri(CezeriParent):
             bolge = self.harita.bolge(kalkis_enlem, kalkis_boylam)
 
             if bolge.yavas_bolge == True:
-                print("hiz bolgesi")
-                return True  
+                self.yavas_git = True
             else:
-                return False  
+                self.yavas_git = False
             
     def hastane(self,guncel_enlem,guncel_boylam):
  
