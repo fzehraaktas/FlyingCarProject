@@ -113,14 +113,13 @@ class Cezeri(CezeriParent):
         for i in range(len(tum_hedefler)):
             mesafe = []
             for j in range(len(tum_hedefler)):
-
-                """ if self.hiz_kontrol(tum_hedefler[i][0],tum_hedefler[i][1],tum_hedefler[j][0],tum_hedefler[j][1]) == True :
+                self.hiz_kontrol(tum_hedefler[i][0],tum_hedefler[i][1],tum_hedefler[j][0],tum_hedefler[j][1])
+                if  self.yavas_git == True :
+                    print("namnam")
                     x = np.sqrt((tum_hedefler[i][0] - tum_hedefler[j][0]) ** 2 + (tum_hedefler[i][1] - tum_hedefler[j][1]) ** 2)
-                    a = 1.7*x 
+                    a = 1.5*x 
                 else: 
-                    """
-
-                a = np.sqrt((tum_hedefler[i][0] - tum_hedefler[j][0]) ** 2 + (tum_hedefler[i][1] - tum_hedefler[j][1]) ** 2)
+                    a = np.sqrt((tum_hedefler[i][0] - tum_hedefler[j][0]) ** 2 + (tum_hedefler[i][1] - tum_hedefler[j][1]) ** 2)
                 mesafe.append(a)
 
             mesafeler.append(mesafe)
