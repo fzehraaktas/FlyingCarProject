@@ -449,10 +449,14 @@ class Cezeri(CezeriParent):
             uzaklik = math.sqrt((istasyon.enlem-guncel_enlem)**2 + (istasyon.boylam-guncel_boylam)**2)
             sarj_bolge = self.harita.bolge(istasyon.enlem,istasyon.boylam)
             inis_sarj = (self.barometre.irtifa - sarj_bolge.yukselti) * 0.13
-            kalacak_sarj = self.batarya.veri - (uzaklik *0.075) - inis_sarj
+            if self.yavas == True:
+                kalacak_sarj = self.batarya.veri - (uzaklik *0.175) - inis_sarj
+            else:
+                kalacak_sarj = self.batarya.veri - (uzaklik *0.075) - inis_sarj
 
-            if kalacak_sarj > 25:
+            if kalacak_sarj > 21:
                 uygun_istasyonlar.append(istasyon)
+                
             else:
                 continue
 
