@@ -493,7 +493,7 @@ class Cezeri(CezeriParent):
 
         print("kalacak_sarj",kalacak_sarj,"sarja git:",self.en_yakin_sarj_istasyonuna_git)
         print("harcanacak_sarj",harcanacak_sarj)
-                           
+              
     def en_yakin_sarj_istasyonu(self,guncel_enlem, guncel_boylam, hedef_enlem, hedef_boylam):
                 
         self.sarj_hesap(guncel_enlem,guncel_boylam,hedef_enlem,hedef_boylam)
@@ -691,10 +691,8 @@ class Cezeri(CezeriParent):
                 self.dur()
                 self.trafik_engel = False
                 self.yasak = False
-                
 
             else: 
-
                 if self.yavas == True:
                     self.dur()
                     self.ileri_git(7)
@@ -790,8 +788,21 @@ class Cezeri(CezeriParent):
             self.git(self.guncel_enlem,self.guncel_boylam,self.en_kisa_rota[self.i][0],self.en_kisa_rota[self.i][1])
                             
 cezeri_1 = Cezeri(id = 1)
+cezeri_2 = Cezeri(id = 2)
+cezeri_3 = Cezeri(id = 3)
+cezeri_4 = Cezeri(id = 4)
+cezeri_5 = Cezeri(id = 5)
 
 
 while robot.is_ok():
 
     (cezeri_1.run())
+    robot.is_ok()
+    (cezeri_2.run())
+    robot.is_ok()
+    (cezeri_3.run())
+    robot.is_ok()
+    (cezeri_4.run())
+    robot.is_ok()
+    (cezeri_5.run())
+
