@@ -343,7 +343,6 @@ class Cezeri(CezeriParent):
         rota_boylam=(hedef_boylam-guncel_boylam)/100         
 
         if self.trafik_engel == False:
-            print("hoh")
 
             for i in range (100):
                 guncel_enlem = guncel_enlem + rota_enlem
@@ -704,7 +703,7 @@ class Cezeri(CezeriParent):
 
             cezeriler_arasi_mesafe = math.sqrt((oteki_bolge.enlem - self.guncel_enlem)**2 + (oteki_bolge.boylam - self.guncel_boylam)**2)
 
-            if cezeriler_arasi_mesafe <= 40:
+            if cezeriler_arasi_mesafe <= 30:
 
                 if self.id < oteki_cezeri.id and self.tr_ok == False:
                     self.trafik_kac = True
