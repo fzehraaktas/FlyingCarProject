@@ -503,7 +503,7 @@ class Cezeri(CezeriParent):
         for istasyon in self.harita.sarj_istasyonlari:
             uzaklik = math.sqrt((istasyon.enlem-guncel_enlem)**2 + (istasyon.boylam-guncel_boylam)**2)
             sarj_bolge = self.harita.bolge(istasyon.enlem,istasyon.boylam)
-            inis_sarj = (self.barometre.irtifa - sarj_bolge.yukselti) * 0.13
+            inis_sarj = abs(self.irtifa - sarj_bolge.yukselti) * 0.15
 
             if self.yavas == True:
                 kalacak_sarj = self.batarya.veri - (uzaklik *0.175) - inis_sarj
