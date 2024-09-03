@@ -368,7 +368,6 @@ class Cezeri(CezeriParent):
                     self.sag_kontrol(guncel_enlem,guncel_boylam,hedef_enlem,hedef_boylam,engel_enlem,engel_boylam)
                     self.sol_kontrol(guncel_enlem,guncel_boylam,hedef_enlem,hedef_boylam,engel_enlem,engel_boylam)
                     
-                    
                     k_sag = math.sqrt((self.sag_durak_enlem- round(guncel_enlem,1) )**2 + (self.sag_durak_boylam- round(guncel_boylam,1) )**2)
                     v_sag = math.sqrt((self.sag_durak_enlem-hedef_enlem)**2 + (self.sag_durak_boylam-hedef_boylam)**2)
 
@@ -633,8 +632,10 @@ class Cezeri(CezeriParent):
 
                         if  self.batarya.veri == 100:
                             self.en_yakin_sarj_istasyonuna_git = False
+                            self.kaldır = False
+                            self.inmek_yasak = False
                             self.irtifa_araliginda = False 
-           
+                            
                         else:
                             self.dur()
                             self.inis_yap(guncel_enlem,guncel_boylam)
@@ -664,8 +665,13 @@ class Cezeri(CezeriParent):
                         self.irtifa_araliginda = False
 
                     else: 
-                        self.ileri_git(YAVAS)
 
+                        if self.yavas == True or uzaklik < 10:
+                            self.dur()
+                            self.ileri_git(7)
+
+                        else:
+                            self.ileri_git(HIZLI)
             else:
                 
                 if self.yavas == True:
@@ -757,12 +763,12 @@ class Cezeri(CezeriParent):
         elif self.irtifa > 120 and self.irtifa_araliginda == False and self.inmek_yasak == False and self.kaldır == False:
             self.donus_tamamla(self.guncel_enlem,self.guncel_boylam,self.en_kisa_rota[self.i][0],self.en_kisa_rota[self.i][1])
 
-            if self.lidar.mesafe < 60 and bolge_2.yukselti > 110:
+            if self.lidar.mesafe < 60 :
                 self.ileri_git(HIZLI)
 
             else:
                 self.dur()
-                self.asagi_git(YAVAS)
+                self.asagi_git(HIZLI)
 
         elif bolge_2.yukselti + 20 > self.irtifa and self.irtifa_araliginda == False and self.kaldır == True: 
             self.yukari_git(HIZLI)
