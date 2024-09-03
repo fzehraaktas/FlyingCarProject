@@ -726,19 +726,26 @@ class Cezeri(CezeriParent):
 
             cezeriler_arasi_mesafe = math.sqrt((oteki_bolge.enlem - self.guncel_enlem)**2 + (oteki_bolge.boylam - self.guncel_boylam)**2)
 
-            if cezeriler_arasi_mesafe <= 30:
+            print(oteki_cezeri.tamamlandi)
 
-                if self.id < oteki_cezeri.id and self.tr_ok == False:
-                    self.trafik_kac = True
-                    self.dur()
-                    self.tr_ok = True
-                        
-                elif self.id >= oteki_cezeri.id and self.tr_ok == False:
-                    self.trafik_bolge = self.harita.bolge(oteki_bolge.enlem,oteki_bolge.boylam)
-                    self.trafik_enlem = oteki_bolge.enlem
-                    self.trafik_boylam = oteki_bolge.boylam
-                    self.trafik_engel = True
-                    self.tr_ok = True
+            if oteki_cezeri.tamamlandi == False:
+                if cezeriler_arasi_mesafe <= 30:
+
+                    if self.id < oteki_cezeri.id and self.tr_ok == False:
+                        self.trafik_kac = True
+                        self.dur()
+                        self.tr_ok = True
+                            
+                    elif self.id >= oteki_cezeri.id and self.tr_ok == False:
+                        self.trafik_bolge = self.harita.bolge(oteki_bolge.enlem,oteki_bolge.boylam)
+                        self.trafik_enlem = oteki_bolge.enlem
+                        self.trafik_boylam = oteki_bolge.boylam
+                        self.trafik_engel = True
+                        self.tr_ok = True
+
+                else:
+                    self.trafik_kac = False
+                    self.tr_ok = False
 
             else:
                 self.trafik_kac = False
