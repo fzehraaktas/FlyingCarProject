@@ -421,8 +421,9 @@ class Cezeri(CezeriParent):
                 print(uzaklik)
 
                 if uzaklik < 5:  
-                    self.yasak = False
                     self.trafik_engel = False
+                    self.yasak = False
+                    
                 else: 
                     self.yasak = True
                     
@@ -433,8 +434,9 @@ class Cezeri(CezeriParent):
                 uzaklik = math.sqrt((self.durak_enlem-guncel_enlem)**2 + (self.durak_boylam-guncel_boylam)**2)
 
                 if uzaklik < 5:  
-                    self.yasak = False
                     self.trafik_engel = False
+                    self.yasak = False
+                    
                 else: 
                     self.yasak = True
 
@@ -677,20 +679,19 @@ class Cezeri(CezeriParent):
                 if self.yavas == True:
                     self.dur()
                     self.ileri_git(7)
-
                 else:
                     self.ileri_git(HIZLI)
 
         else:
-
             print("engel")
             uzaklik = math.sqrt((self.durak_enlem-guncel_enlem)**2 + (self.durak_boylam-guncel_boylam)**2)
             self.donus_tamamla(guncel_enlem,guncel_boylam,self.durak_enlem,self.durak_boylam)
 
             if uzaklik < 5:  
                 self.dur()
-                self.yasak = False
                 self.trafik_engel = False
+                self.yasak = False
+                
 
             else: 
 
@@ -731,14 +732,15 @@ class Cezeri(CezeriParent):
 
             print(oteki_cezeri.tamamlandi)
 
-            if oteki_cezeri.tamamlandi == False:
-                if cezeriler_arasi_mesafe <= 30:
+            if oteki_cezeri.tamamlandi == 0:
+                
+                if cezeriler_arasi_mesafe <= 40:
 
                     if self.id < oteki_cezeri.id and self.tr_ok == False:
                         self.trafik_kac = True
                         self.dur()
                         self.tr_ok = True
-                            
+                                
                     elif self.id >= oteki_cezeri.id and self.tr_ok == False:
                         self.trafik_bolge = self.harita.bolge(oteki_bolge.enlem,oteki_bolge.boylam)
                         self.trafik_enlem = oteki_bolge.enlem
@@ -746,11 +748,8 @@ class Cezeri(CezeriParent):
                         self.trafik_engel = True
                         self.tr_ok = True
 
-                else:
-                    self.trafik_kac = False
-                    self.tr_ok = False
-
             else:
+                self.trafik_engel = False
                 self.trafik_kac = False
                 self.tr_ok = False
 
@@ -789,11 +788,12 @@ class Cezeri(CezeriParent):
 
         if self.irtifa_araliginda == True and self.trafik_kac == False:
             self.git(self.guncel_enlem,self.guncel_boylam,self.en_kisa_rota[self.i][0],self.en_kisa_rota[self.i][1])
-            
-                 
+                            
 cezeri_1 = Cezeri(id = 1)
+cezeri_2 = Cezeri(id = 2)
 
 while robot.is_ok():
 
     (cezeri_1.run())
-
+    robot.is_ok()
+    (cezeri_2.run())
