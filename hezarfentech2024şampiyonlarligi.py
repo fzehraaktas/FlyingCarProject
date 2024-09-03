@@ -475,24 +475,24 @@ class Cezeri(CezeriParent):
         inis_sarj = abs(self.irtifa - bolge.yukselti) * 0.15
 
         if self.yavas == True: 
-            self.kalacak_sarj = self.batarya.veri - (uzaklik *0.175) 
-            harcanacak_sarj = self.kalacak_sarj - (sarj_uzaklik *0.175)
+            kalacak_sarj = self.batarya.veri - (uzaklik *0.175) 
+            harcanacak_sarj = kalacak_sarj - (sarj_uzaklik *0.175)
         else:
-            self.kalacak_sarj = self.batarya.veri - (uzaklik *0.075)         
-            harcanacak_sarj = self.kalacak_sarj - (sarj_uzaklik *0.075)
+            kalacak_sarj = self.batarya.veri - (uzaklik *0.075)         
+            harcanacak_sarj = kalacak_sarj - (sarj_uzaklik *0.075)
 
         if hedef.amac == INIS:     
-            self.kalacak_sarj = self.kalacak_sarj - inis_sarj
+            kalacak_sarj = kalacak_sarj - inis_sarj
             harcanacak_sarj = harcanacak_sarj - inis_sarj
 
-        if self.kalacak_sarj < 21 :
+        if kalacak_sarj < 21 :
             self.en_yakin_sarj_istasyonuna_git = True
 
         elif harcanacak_sarj < 21 and hedef.amac == ZIYARET :
             self.en_yakin_sarj_istasyonuna_git = True
 
-        #print("kalacak_sarj",kalacak_sarj,"sarja git:",self.en_yakin_sarj_istasyonuna_git)
-        #print("harcanacak_sarj",harcanacak_sarj)
+        print("kalacak_sarj",kalacak_sarj,"sarja git:",self.en_yakin_sarj_istasyonuna_git)
+        print("harcanacak_sarj",harcanacak_sarj)
                            
     def en_yakin_sarj_istasyonu(self,guncel_enlem, guncel_boylam, hedef_enlem, hedef_boylam):
                 
@@ -733,7 +733,7 @@ class Cezeri(CezeriParent):
             print(oteki_cezeri.tamamlandi)
 
             if oteki_cezeri.tamamlandi == 0:
-                
+
                 if cezeriler_arasi_mesafe <= 40:
 
                     if self.id < oteki_cezeri.id and self.tr_ok == False:
@@ -790,10 +790,8 @@ class Cezeri(CezeriParent):
             self.git(self.guncel_enlem,self.guncel_boylam,self.en_kisa_rota[self.i][0],self.en_kisa_rota[self.i][1])
                             
 cezeri_1 = Cezeri(id = 1)
-cezeri_2 = Cezeri(id = 2)
+
 
 while robot.is_ok():
 
     (cezeri_1.run())
-    robot.is_ok()
-    (cezeri_2.run())
