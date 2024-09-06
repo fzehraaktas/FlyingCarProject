@@ -671,7 +671,7 @@ class Cezeri(CezeriParent):
             uzaklik = math.sqrt((hedef_enlem-guncel_enlem)**2 + (hedef_boylam-guncel_boylam)**2)
 
             if uzaklik < 35 :
-                if uzaklik < 10:
+                if uzaklik < 5 and self.motor_hata == False:
                     if hedef.amac == INIS:
 
                         if self.en_yakin_sarj_istasyonuna_git == True:
@@ -698,11 +698,6 @@ class Cezeri(CezeriParent):
                         print("hehe:)")
                         self.dur()
                         self.inis_yap(guncel_enlem,guncel_boylam)
-                    
-                    elif self.motor_hata==True:
-                        print("noknok")
-                        self.dur()
-                        self.inis_yap(guncel_enlem,guncel_boylam)
 
                     else:  
                         if self.irtifa > 120: 
@@ -711,6 +706,11 @@ class Cezeri(CezeriParent):
                         self.kaldır = False
                         self.inmek_yasak = False
                         self.i +=1 
+                
+                elif uzaklik < 10 and self.motor_hata == True:   
+                    print("noknok")
+                    self.dur()
+                    self.inis_yap(guncel_enlem,guncel_boylam)
 
                 else: 
 
@@ -840,20 +840,20 @@ class Cezeri(CezeriParent):
             self.git(self.guncel_enlem,self.guncel_boylam,self.en_kisa_rota[self.i][0],self.en_kisa_rota[self.i][1])
                             
 cezeri_1 = Cezeri(id = 1)
-"""cezeri_2 = Cezeri(id = 2)
+cezeri_2 = Cezeri(id = 2)
 cezeri_3 = Cezeri(id = 3)
 cezeri_4 = Cezeri(id = 4)
-cezeri_5 = Cezeri(id = 5)"""
+cezeri_5 = Cezeri(id = 5)
 
 
 while robot.is_ok():
 
     (cezeri_1.run())
-"""    robot.is_ok()
+    robot.is_ok()
     (cezeri_2.run())
     robot.is_ok()
     (cezeri_3.run())
     robot.is_ok()
     (cezeri_4.run())
     robot.is_ok()
-    (cezeri_5.run())"""
+    (cezeri_5.run())
