@@ -50,7 +50,6 @@ class Cezeri(CezeriParent):
         for motor in self.motor.rpm:
             if motor == 0 :
                 self.motor_hata = True
-                #print("hata:",self.motor.hata)
 
         if self.motor_hata == True and self.bulundu == False:
 
@@ -249,11 +248,11 @@ class Cezeri(CezeriParent):
         x = math.degrees(math.atan2(sin,cos))
 
         if self.manyetometre.hata:
-            #print("hata!!",self.manyetometre.veri,imu_manyet)
+   
             manyet_veri = imu_manyet
 
         else:
-            #print("hata yok",self.manyetometre.veri,imu_manyet)
+  
             manyet_veri = self.manyetometre.veri
 
         if x>180 :
@@ -410,7 +409,7 @@ class Cezeri(CezeriParent):
                     continue
 
                 if bolge.ucusa_yasakli_bolge == True or bolge.ruzgar == True or bolge.yukselti>= 100:
-                    #print("yasak")
+            
                     engel_bolge.append([guncel_enlem,guncel_boylam])
                     engel_enlem=engel_bolge[0][0]
                     engel_boylam=engel_bolge[0][1]
@@ -429,7 +428,7 @@ class Cezeri(CezeriParent):
 
                 
                     if sol_uzaklik < sag_uzaklik:
-                        #print("sol")
+                       
                         self.durak_enlem = self.sol_durak_enlem
                         self.durak_boylam = self.sol_durak_boylam
                         uzaklik = math.sqrt((self.durak_enlem-guncel_enlem)**2 + (self.durak_boylam-guncel_boylam)**2)
@@ -439,7 +438,7 @@ class Cezeri(CezeriParent):
                             self.yasak = True
                         
                     else:
-                        #print("sag")
+                    
                         self.durak_enlem = self.sag_durak_enlem
                         self.durak_boylam = self.sag_durak_boylam
                         uzaklik = math.sqrt((self.durak_enlem-guncel_enlem)**2 + (self.durak_boylam-guncel_boylam)**2)
@@ -449,8 +448,7 @@ class Cezeri(CezeriParent):
                         else: 
                             self.yasak = True
 
-        else:
-            print("nalan")                    
+        else:      
             self.sag_kontrol(guncel_enlem,guncel_boylam,hedef_enlem,hedef_boylam,self.trafik_enlem,self.trafik_boylam)
             self.sol_kontrol(guncel_enlem,guncel_boylam,hedef_enlem,hedef_boylam,self.trafik_enlem,self.trafik_boylam)
                 
@@ -464,12 +462,10 @@ class Cezeri(CezeriParent):
             sol_uzaklik = k_sol + v_sol    
 
             if sol_uzaklik < sag_uzaklik:
-                print("sol")
                 self.durak_enlem = self.sol_durak_enlem
                 self.durak_boylam = self.sol_durak_boylam
                 uzaklik = math.sqrt((self.durak_enlem-guncel_enlem)**2 + (self.durak_boylam-guncel_boylam)**2)
-                print(uzaklik)
-
+               
                 if uzaklik < 5:  
                     self.trafik_engel = False
                     self.yasak = False
@@ -478,7 +474,6 @@ class Cezeri(CezeriParent):
                     self.yasak = True
                     
             else:
-                print("sag")
                 self.durak_enlem = self.sag_durak_enlem
                 self.durak_boylam = self.sag_durak_boylam
                 uzaklik = math.sqrt((self.durak_enlem-guncel_enlem)**2 + (self.durak_boylam-guncel_boylam)**2)
@@ -541,9 +536,6 @@ class Cezeri(CezeriParent):
         elif harcanacak_sarj < 21 and hedef.amac == ZIYARET :
             self.en_yakin_sarj_istasyonuna_git = True
 
-        #print("kalacak_sarj",kalacak_sarj,"sarja git:",self.en_yakin_sarj_istasyonuna_git)
-        #print("harcanacak_sarj",harcanacak_sarj)
-              
     def en_yakin_sarj_istasyonu(self,guncel_enlem, guncel_boylam, hedef_enlem, hedef_boylam):
                 
         self.sarj_hesap(guncel_enlem,guncel_boylam,hedef_enlem,hedef_boylam)
@@ -585,39 +577,31 @@ class Cezeri(CezeriParent):
 
         if ((self.gnss.enlem == 0 and self.gnss.boylam == 0) or self.gnss.spoofing == True) and self.barometre.hata == 1:#ikisi de bozuksa 
             self.irtifa = self.son_irtifa  + self.imu_yuksel
-            #print("ikisi de bozuk")
 
         elif ((self.gnss.enlem == 0 and self.gnss.boylam == 0) or self.gnss.spoofing == True) and self.barometre.hata == 0:#gnss bozuk 
-            #print("gnss bozuk")
             self.irtifa = self.barometre.irtifa
 
         elif self.barometre.hata == 1:#baro bozuk
             self.irtifa = self.gnss.irtifa
-            #print("barobozuk")
 
         else:
             self.son_irtifa = self.barometre.irtifa
             self.irtifa = self.barometre.irtifa
-            #print("bozukluk yok")
 
     def inis_yap(self,guncel_enlem,guncel_boylam):
 
         inis = self.harita.bolge(guncel_enlem,guncel_boylam)
         
         if self.radar.hata == 0 and self.lidar.hata == 0 :#hata yoksa
-            #print("bozuk yok")
             self.mesafe = self.lidar.mesafe
 
         elif self.radar.hata == 1 and self.lidar.hata == 0:#sadece radar hatası varsa
-            #print("radar bozuk")
             self.mesafe = self.lidar.mesafe
 
         elif self.radar.hata == 0 and self.lidar.hata == 1:#sadece lidar hatası varsa
-            #print("lidar bozuk")
             self.mesafe = self.radar.mesafe
 
         else:#ikisi de bozuksa
-            #print("ikisi de bozuk")
             self.mesafe = self.irtifa - inis.yukselti 
 
         if self.mesafe < 10:
@@ -633,12 +617,10 @@ class Cezeri(CezeriParent):
         self.motor_ariza(guncel_enlem,guncel_boylam)
 
         if self.acil == True:
-            print("knk acil bak")
             hedef_enlem = self.hastane_enlem
             hedef_boylam = self.hastane_boylam
         
         if self.motor_hata == True or self.motor.hata == 1 :
-            print("in")
             self.dur()
             hedef_enlem = self.inilebilir_enlem
             hedef_boylam = self.inilebilir_boylam
@@ -656,17 +638,15 @@ class Cezeri(CezeriParent):
                 break
 
         self.engel_kac(guncel_enlem,guncel_boylam,hedef_enlem,hedef_boylam)
-        #print("YASAK :",self.yasak)
 
         hedef_uzaklik = math.sqrt((hedef_enlem-guncel_enlem)**2 + (hedef_boylam-guncel_boylam)**2)
-        print(hedef_uzaklik)
+
         self.hedef_bolge = self.harita.bolge(hedef_enlem,hedef_boylam) 
 
         if self.hedef_bolge.yukselti > 120:  
             self.yasak = False 
 
         if self.yasak == False:
-            #print("hedefe gidiyoz")
             self.donus_tamamla(guncel_enlem,guncel_boylam,hedef_enlem,hedef_boylam)
             uzaklik = math.sqrt((hedef_enlem-guncel_enlem)**2 + (hedef_boylam-guncel_boylam)**2)
 
@@ -675,7 +655,6 @@ class Cezeri(CezeriParent):
                     if hedef.amac == INIS:
 
                         if self.en_yakin_sarj_istasyonuna_git == True:
-                            print("ha!")
                             self.dur()
                             self.inis_yap(guncel_enlem,guncel_boylam)
 
@@ -690,12 +669,11 @@ class Cezeri(CezeriParent):
                             self.inis_yap(guncel_enlem,guncel_boylam)
 
                     elif self.i == (len(self.en_kisa_rota) - 1):
-                        print("abo")
+
                         self.dur()
                         self.asagi_git(YAVAS)
 
                     elif self.acil_durum:  
-                        print("hehe:)")
                         self.dur()
                         self.inis_yap(guncel_enlem,guncel_boylam)
 
@@ -708,7 +686,6 @@ class Cezeri(CezeriParent):
                         self.i +=1 
                 
                 elif uzaklik < 10 and self.motor_hata == True:   
-                    print("noknok")
                     self.dur()
                     self.inis_yap(guncel_enlem,guncel_boylam)
 
@@ -735,7 +712,7 @@ class Cezeri(CezeriParent):
                     self.ileri_git(HIZLI)
 
         else:
-            print("engel")
+
             uzaklik = math.sqrt((self.durak_enlem-guncel_enlem)**2 + (self.durak_boylam-guncel_boylam)**2)
             self.donus_tamamla(guncel_enlem,guncel_boylam,self.durak_enlem,self.durak_boylam)
 
@@ -780,8 +757,6 @@ class Cezeri(CezeriParent):
 
             cezeriler_arasi_mesafe = math.sqrt((oteki_bolge.enlem - self.guncel_enlem)**2 + (oteki_bolge.boylam - self.guncel_boylam)**2)
 
-            print(oteki_cezeri.tamamlandi)
-
             if oteki_cezeri.tamamlandi == 0:
 
                 if cezeriler_arasi_mesafe <= 40:
@@ -802,6 +777,7 @@ class Cezeri(CezeriParent):
                 self.trafik_engel = False
                 self.trafik_kac = False
                 self.tr_ok = False
+                continue
 
         self.rota_olustur()
 
@@ -809,7 +785,6 @@ class Cezeri(CezeriParent):
         bolge_2 = self.harita.bolge(self.guncel_enlem , self.guncel_boylam )
 
         if bolge_1.yavas_bolge == True or bolge_2.yavas_bolge == True:
-            print("yavvas")
             self.yavas = True
         else:
             self.yavas = False
@@ -842,9 +817,6 @@ class Cezeri(CezeriParent):
 cezeri_1 = Cezeri(id = 1)
 cezeri_2 = Cezeri(id = 2)
 cezeri_3 = Cezeri(id = 3)
-cezeri_4 = Cezeri(id = 4)
-cezeri_5 = Cezeri(id = 5)
-
 
 while robot.is_ok():
 
@@ -853,7 +825,4 @@ while robot.is_ok():
     (cezeri_2.run())
     robot.is_ok()
     (cezeri_3.run())
-    robot.is_ok()
-    (cezeri_4.run())
-    robot.is_ok()
-    (cezeri_5.run())
+    
