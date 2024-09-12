@@ -4,15 +4,14 @@
 -
 +2024 Yapılan Hatalar ve Geliştirilecek Konular:
 
->> For döngülerinden dolayı simülasyon çok yavaş çalışıyordu. Simülasyonda olabilidiğince hızlı çalışan bir kod yazılmalı.
-
+> For döngülerinden dolayı simülasyon çok yavaş çalışıyordu. Simülasyonda olabilidiğince hızlı çalışan bir kod yazılmalı.
+>
+> 
 
 +2025 Geliştirilen Konular:
-#
-#
-#
-#
-#
+>
+>
+>
 
 *Hezarfen TECH uçan araba çalışma kodlarıdır.
 -
