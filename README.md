@@ -3,7 +3,7 @@
 *2025 yılı Uçan Araba Simülasyon Yarışması Üniversite Kategorisi 1.si
 -
 +2024 Yapılan Hatalar ve Geliştirilecek Konular:
-#
+#For döngülerinden dolayı simülasyon çok yavaş çalışıyordu. Simülasyonda olabilidiğince hızlı çalışan bir kod yazılmalı.
 #
 #
 #
