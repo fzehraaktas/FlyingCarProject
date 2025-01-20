@@ -826,3 +826,4 @@ cezeri_1 = Cezeri(id = 1)
 while robot.is_ok():
 
     (cezeri_1.run())
+
