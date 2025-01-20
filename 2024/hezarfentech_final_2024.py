@@ -1,6 +1,6 @@
 import numpy as np
 from itertools import permutations, product
-import time
+
 
 bolgeler = [None, None, None, None, None]
 cezeri = [None, None, None, None, None]
