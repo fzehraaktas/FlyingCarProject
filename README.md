@@ -23,7 +23,7 @@
 *Uçan araba çalışma kodlarıdır.
 -
 
-*Hezarfen TECH gelecek planlamaları: 
+*Gelecek planlamaları: 
 -
 +Yeni şirketleşme sürecinde pay hakları
 +Yeni şirketleşme sürecinde görev dağılımları
