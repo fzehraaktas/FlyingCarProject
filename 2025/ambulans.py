@@ -55,8 +55,8 @@ class Ambulans(AmbulansParent):
       self.baslangic_bolgesi = self.harita.bolge(self.gnss.enlem, self.gnss.boylam)
       self.baslangic_bolgesi.amac = 0
 
-      self.engelsiniri = 260 - 10 # Azami Yukseklik - 10 (HATA PAYI)
-      self.azami_yukseklik = 260 # Itfaiye Azami Yukseklik
+      self.engelsiniri = 260.0 - 10 # Azami Yukseklik - 10 (HATA PAYI)
+      self.azami_yukseklik = 260.0 # Ambulans Azami Yukseklik
       self.birimbatarya = 11
 
       self.test2 = True
