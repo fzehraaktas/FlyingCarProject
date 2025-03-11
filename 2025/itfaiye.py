@@ -52,8 +52,12 @@ class Itfaiye(ItfaiyeParent):
         print(self.harita.yangin_bolgeleri[0])
         print(self.baslangica_don)
 
+        self.hedef_amaclar = []
+        self.hedef_amac = None
+
         self.baslangic_bolgesi = self.harita.bolge(self.gnss.enlem, self.gnss.boylam)
-        self.baslangic_bolgesi.amac = 0
+        self.baslangic_bolgesi.amac = 0 # KULLANILMIYOR SUANDA AMA KALSIN CEMRE MART 11
+        # self.hedef_amaclar.append(0) # Baslangic bolgesi amaci
 
         self.engelsiniri = 260.0 - 10 # Azami Yukseklik - 10 (HATA PAYI)
         self.azami_yukseklik = 260.0 # Itfaiye Azami Yukseklik
@@ -109,7 +113,7 @@ class Itfaiye(ItfaiyeParent):
             self.hedef_bolge = self.hedefrotasi[self.hedefrotasicount].bolge
         else:
             self.hedef_bolge = self.hedefrotasi[self.hedefrotasicount]
-            self.hedef.amac = 1
+            self.hedef_amac = self.hedef_amaclar[self.hedefrotasicount]
         self.baslangicadonulsunmu = False
  
         self.hedefbolgedegistimi_count = 0 
@@ -321,10 +325,10 @@ class Itfaiye(ItfaiyeParent):
                     else:
                         if len(self.hedefrotasi) <= (self.hedefrotasicount + 1):
                             if self.baslangica_don: 
-                                self.hedef.amac = 0
+                                self.hedef_amac = 0
                                 self.hedef_bolge = self.hedefrotasi[self.hedefrotasicount]
                         else:             
-                            self.hedef.amac = 2
+                            self.hedef_amac = self.hedef_amaclar[self.hedefrotasicount]
                             self.hedef_bolge = self.hedefrotasi[self.hedefrotasicount]
                             
                     # Rota
@@ -532,11 +536,11 @@ class Itfaiye(ItfaiyeParent):
                     test1 = True  
 
                 if abs(mesafe_y) < katsayideger and abs(mesafe_x) < katsayideger:
-                    print("Hedef bolge ulasildi", self.hedef_bolge.enlem, self.hedef_bolge.boylam, self.hedef.amac)
+                    print("Hedef bolge ulasildi", self.hedef_bolge.enlem, self.hedef_bolge.boylam, self.hedef_amac)
                     self.test2 = True
                     self.hedef_enlemboylam_ulasildi = True
 
-                    if self.hedef.amac == 0: 
+                    if self.hedef_amac == 0: 
                         print("HELOLLFJOFJOF")
                         if self.gnss_userhata: 
                             self.gnsshatasidogrulandi = True
@@ -547,7 +551,7 @@ class Itfaiye(ItfaiyeParent):
                                 self.HedefeDon(hedefx, hedefy, self.filtered_gnss_enlem, self.filtered_gnss_boylam)
                             elif self.radar.mesafe>15 and not self.radar.hata:
                                 self.HedefeDon(hedefx, hedefy, self.filtered_gnss_enlem, self.filtered_gnss_boylam)
-                    elif self.hedef.amac == 1:
+                    elif self.hedef_amac == 1:
                         if self.yenihedefdurcount < 10: 
                             self.dur()
                             self.yenihedefdurcount += 1  
@@ -561,16 +565,16 @@ class Itfaiye(ItfaiyeParent):
                             else:
                                 if len(self.hedefrotasi) <= (self.hedefrotasicount + 1):
                                     if self.baslangica_don: 
-                                        #self.hedef.amac = 0 # suan gerek yok 8 mart 2025 cemre
+                                        self.hedef_amac = 0 
                                         self.hedef_bolge = self.hedefrotasi[self.hedefrotasicount]
-                                        self.hedef.amac = self.hedef_bolge.amac
+                                        #self.hedef_amac = self.hedef_amaclar[self.hedefrotasicount]
                                     else:  
                                         pass
                                 
                                 else:  
-                                    # self.hedef.amac = 2 # suan gerek yok 8 mart 2025 cemre
+                                    # self.hedef_amac = 2 # suan gerek yok 8 mart 2025 cemre
                                     self.hedef_bolge = self.hedefrotasi[self.hedefrotasicount]
-                                    self.hedef.amac = self.hedef_bolge.amac
+                                    self.hedef_amac = self.hedef_amaclar[self.hedefrotasicount]
                                   
                             # Rota
                             self.rota = []
@@ -586,13 +590,61 @@ class Itfaiye(ItfaiyeParent):
                             self.RotayiYenidenHesapla()
 
                             return
-                    elif self.hedef.amac == 2:
+                    elif self.hedef_amac == 2:
                         print("HELLO")
                         self.hedef_enlemboylam_ulasildi = False
                         self.SarjIstasyonunainisYap()
                         return
+                    elif self.hedef_amac == 3: # Kargo bolgesi (baslangica don calismiyor o yuzden baslangica don false olsa bile baslangica donecek)
+                        print("Yangin Konumuna gelindi")
+                        if self.yenihedefdurcount < 10: # Once bir dur rahatla
+                            self.su_ac(True)
+                                
+                            print("su acik")
+                            self.dur()
+                            self.yenihedefdurcount += 1  
+                            return
+                        
+                        else: # Siradaki hedefe bak. 
+                            self.su_ac(False)
+                            self.yenihedefdurcount = 0
+                            if hasattr(self.hedefrotasi[self.hedefrotasicount], 'bolge'): # Buraya hic gelmiyor die dokunmuoz suanlik Cemre 11 mart
+                                self.hedef = self.hedefrotasi[self.hedefrotasicount]
+                                self.hedef_bolge = self.hedefrotasi[self.hedefrotasicount].bolge
+                            else:
+                                if self.hedef_bolge == self.hedefrotasi[-1]: # Kargoyu bıraktık ve son hedef buydu baslangica geri dön
+                                    self.hedef_amac = 0
+                                    self.hedef_bolge = self.baslangic_bolgesi
 
-                    print("Siradaki hedef", self.hedef_bolge.enlem, self.hedef_bolge.boylam)
+                                elif len(self.hedefrotasi) <= (self.hedefrotasicount + 1):
+                                    if self.baslangica_don: 
+                                        print("test1")
+                                        self.hedef_amac = 0 
+                                        self.hedef_bolge = self.hedefrotasi[self.hedefrotasicount]
+                                        #self.hedef_amac = self.hedef_amaclar[self.hedefrotasicount]
+                                    else:  
+                                        print('test2')
+                                        pass
+                                else:  
+                                    print('test3') # Hata burada
+                                    # self.hedef_amac = 2 # suan gerek yok 8 mart 2025 cemre
+                                    self.hedef_bolge = self.hedefrotasi[self.hedefrotasicount]
+                                    self.hedef_amac = self.hedef_amaclar[self.hedefrotasicount]
+                                  
+                            # Rota
+                            self.rota = []
+                            self.rota_count = 0
+                            self.arac_x, self.arac_y = self.filtered_gnss_enlem, self.filtered_gnss_boylam
+                            self.durcount = 0
+
+                            # Kalkış Yap / Hedefe Ulaşıldı
+                            self.hedefe_ulasildi = False
+                            self.hedef_enlemboylam_ulasildi =False
+                            self.kalkis_yap = False
+                            self.yukseklige_ulasildi = False
+                            self.RotayiYenidenHesapla()
+
+                            return
                     
                     
                 
@@ -722,7 +774,7 @@ class Itfaiye(ItfaiyeParent):
         elif senaryo == 'RUZGARLIBOLGE':
             angle_katsayisi = 75
         elif senaryo == 'YASAKLIBOLGE':
-            angle_katsayisi = 45
+            angle_katsayisi = 75
         elif senaryo == 'YAVASBOLGE':
             angle_katsayisi = 30
 
@@ -968,7 +1020,7 @@ class Itfaiye(ItfaiyeParent):
         bolge = self.harita.bolge(self.filtered_gnss_enlem, self.filtered_gnss_boylam)
         print("--------------")
         print(bolge.inilebilir, self.lidar.hata)
-        if bolge.inilebilir or gnsshata or bolge.inis_bolgesi:
+        if bolge.inilebilir or gnsshata or bolge.inis_bolgesi or True: # bolge inilebilir vs. calismadigi icin suanlik bu 2. kontrol yapilmayacak
             if self.lidar.hata:
                 if self.radar.hata:
                     self.asagi_git(YAVAS)
@@ -1040,6 +1092,7 @@ class Itfaiye(ItfaiyeParent):
 
         for hedef in self.harita.yangin_bolgeleri:
             hedef.amac = 1
+            self.hedef_amaclar.append(3)
             #if hedef.sira == -1:
               #  sira.append(hedef)
             #elif hedef.sira == 0:
@@ -1077,6 +1130,7 @@ class Itfaiye(ItfaiyeParent):
 
         if self.baslangica_don:
             sira.append(self.baslangic_bolgesi)
+            self.hedef_amaclar.append(0)
 
         sira = self.ensure_battery_capacity(sira) 
 
