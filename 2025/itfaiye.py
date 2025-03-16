@@ -358,6 +358,7 @@ class Itfaiye(ItfaiyeParent):
             return
         if self.hedef_enlemboylam_ulasildi:
             self.HedefeinisYap()
+            return
         #*******|| Kalkış / Bitiş / İniş||********
 
         #*******||Spoff Detect / GNSS Detect||********
@@ -599,15 +600,15 @@ class Itfaiye(ItfaiyeParent):
                         self.hedef_enlemboylam_ulasildi = False
                         self.SarjIstasyonunainisYap()
                         return
-                    elif self.hedef_amac == 3: # Kargo bolgesi (baslangica don calismiyor o yuzden baslangica don false olsa bile baslangica donecek)
+                    elif self.hedef_amac == 3: # Yangın bolgesi (baslangica don calismiyor o yuzden baslangica don false olsa bile baslangica donecek)
 
-                        if self.harita.yangin_bolgeleri is not []: # Sadece bir yangin icin calisir
-                            if not self.suacik:
-                              print("su acik")
-                              self.dur()
-                              self.su_ac(True)
-                              self.suacik = True
-                            
+                        #if self.harita.yangin_bolgeleri is not []: # Sadece bir yangin icin calisir
+                        if self.su_seviyesi > 6:
+                            print("su acik")
+                            self.dur()
+                            self.su_ac(True)
+                            self.suacik = True
+                        
                             print(self.su_seviyesi)
                             return
                         
