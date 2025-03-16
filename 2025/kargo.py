@@ -16,51 +16,55 @@ def bolgeler_arasi_mesafe(bolge_1, bolge_2):
 class Cezeri(CezeriParent):
     def __init__(self, id = 0):
         super().__init__(id = id, keyboard = False, sensor_mode = NORMAL)
-        #print(self.gnss.irtifa)
+        ##print(self.gnss.irtifa)
 
 
     def run(self):
         super().run()
-        #print(self.manyetometre.veri)
+        ##print(self.manyetometre.veri)
 
 class Itfaiye(ItfaiyeParent):
     def __init__(self, id = 0):
         super().__init__(id = id, keyboard = False, sensor_mode = NORMAL)
-        #print(self.gnss.irtifa)
+        ##print(self.gnss.irtifa)
 
 
     def run(self):
         super().run()
-        print("Hello")
-        #print(self.manyetometre.veri)
+        #print("Hello")
+        ##print(self.manyetometre.veri)
      
 class Ambulans(AmbulansParent):
     def __init__(self, id = 0):
         super().__init__(id = id, keyboard = False, sensor_mode = NORMAL)
-        #print(self.gnss.irtifa)
+        ##print(self.gnss.irtifa)
 
 
     def run(self):
         super().run()
-        #print(self.manyetometre.veri)
+        ##print(self.manyetometre.veri)
 
 class Kargo(KargoParent):
   def __init__(self, id = 0):
       super().__init__(id = id, keyboard = False, sensor_mode = NORMAL)
-      print(self.hedefler)
-      print("------------")
-      print(self.harita.teslimat_bolgeleri, "TEST")
-      print("Cemre")
-      print(self.harita.teslimat_bolgeleri[0].enlem, self.harita.teslimat_bolgeleri[0].boylam)
-      print("Cemre")
-      print(self.baslangica_don)
-      print("Cemre")
+      #print(self.hedefler)
+      #print("------------")
+      #print(self.harita.teslimat_bolgeleri, "TEST")
+      #print("Cemre")
+      #print(self.harita.teslimat_bolgeleri[0].enlem, self.harita.teslimat_bolgeleri[0].boylam)
+      #print("Cemre")
+      #print(self.baslangica_don)
+      #print("Cemre")
 
       self.hedef_amaclar = []
       self.hedef_amac = None
 
+      # Kargo
+      self.kargoteslimedildimi = False
+      # Kargo
+
       self.baslangic_bolgesi = self.harita.bolge(self.gnss.enlem, self.gnss.boylam)
-      print(self.baslangic_bolgesi.enlem, self.baslangic_bolgesi.boylam)
+      #print(self.baslangic_bolgesi.enlem, self.baslangic_bolgesi.boylam)
       self.baslangic_bolgesi.amac = 0 # KULLANILMIYOR SUANDA AMA KALSIN CEMRE MART 11
       # self.hedef_amaclar.append(0) # Baslangic bolgesi amaci
 
@@ -112,10 +116,10 @@ class Kargo(KargoParent):
       self.hedefrotasi = self.HedefSirasiniBelirle() # Hedefleri sıralar
       self.hedefrotasi = self.HedefSirasiniDuzenle(self.hedefrotasi)
 
-      print(self.hedefrotasi, self.hedef_amaclar)
-      for index, hedef in enumerate(self.hedefrotasi):
-          print(index, hedef.enlem, hedef.boylam, self.hedef_amaclar[index])
-          #print(hedef, self.hedef_amaclar[index])
+      #print(self.hedefrotasi, self.hedef_amaclar)
+      #for index, hedef in enumerate(self.hedefrotasi):
+          #print(index, hedef.enlem, hedef.boylam, self.hedef_amaclar[index])
+          ##print(hedef, self.hedef_amaclar[index])
 
       self.hedefrotasicount = 0
       self.hedef = self.hedefrotasi[self.hedefrotasicount]
@@ -134,6 +138,7 @@ class Kargo(KargoParent):
       self.hedefe_ulasildi = False 
       self.sarj_istasyonuna_ulasildi = False  
       self.hedef_enlemboylam_ulasildi = False  
+      self.hedef_enlemboylam_ulasildi_kargo = False
       self.kalkis_yap = False
       self.yukseklige_ulasildi = False
       self.yenihedefdurcount = 0
@@ -195,8 +200,10 @@ class Kargo(KargoParent):
   def run(self):
       super().run()
 
+      #print(self.kargo_durumu)
 
-      #print(self.manyetometre.veri)
+
+      ##print(self.manyetometre.veri)
       #*******||Filter||********
       if not self.gnss_userhata or not self.gnss.hata:
           self.filtered_gnss_enlem = self.FilterData(50, gnssenlem=True)
@@ -356,12 +363,19 @@ class Kargo(KargoParent):
 
                   return
       if self.hedefe_ulasildi:
+          print("GÖREV TAMAMLANDI")
+          if self.kargo_durumu: # Sadece bir kargo icin calisir
+            self.teslim_et()
+            print("Kargo ulaşıldı")
+                                        
           return
       if self.gnsshatasidogrulandi:
           self.HedefeinisYap(gnsshata = True)
           return
       if self.hedef_enlemboylam_ulasildi:
           self.HedefeinisYap()
+      if self.hedef_enlemboylam_ulasildi_kargo:
+          self.kargoyainisyap()
       #*******|| Kalkış / Bitiş / İniş||********
 
       #*******||Spoff Detect / GNSS Detect||********
@@ -544,12 +558,11 @@ class Kargo(KargoParent):
                   test1 = True  
 
               if abs(mesafe_y) < katsayideger and abs(mesafe_x) < katsayideger:
-                  print("Hedef bolge ulasildi", self.hedef_bolge.enlem, self.hedef_bolge.boylam, self.hedef_amac)
+                  #print("Hedef bolge ulasildi", self.hedef_bolge.enlem, self.hedef_bolge.boylam, self.hedef_amac)
                   self.test2 = True
-                  self.hedef_enlemboylam_ulasildi = True
 
                   if self.hedef_amac == 0: 
-                      print("HELOLLFJOFJOF")
+                      self.hedef_enlemboylam_ulasildi = True
                       if self.gnss_userhata: 
                           self.gnsshatasidogrulandi = True
                           return
@@ -565,6 +578,7 @@ class Kargo(KargoParent):
                           self.yenihedefdurcount += 1  
                           return
                       else:
+                          self.hedef_enlemboylam_ulasildi = True
                           self.yenihedefdurcount = 0
                           self.hedefrotasicount += 1
                           if hasattr(self.hedefrotasi[self.hedefrotasicount], 'bolge'):
@@ -573,16 +587,16 @@ class Kargo(KargoParent):
                           else:
                               if len(self.hedefrotasi) <= (self.hedefrotasicount + 1):
                                   if self.baslangica_don: 
-                                      print("test1")
+                                      #print("test1")
                                       self.hedef_amac = 0 
                                       self.hedef_bolge = self.hedefrotasi[self.hedefrotasicount]
                                       #self.hedef_amac = self.hedef_amaclar[self.hedefrotasicount]
                                   else:  
-                                      print('test2')
+                                      #print('test2')
                                       pass
                               
                               else:  
-                                  print('test3') # Hata burada
+                                  #print('test3') # Hata burada
                                   # self.hedef_amac = 2 # suan gerek yok 8 mart 2025 cemre
                                   self.hedef_bolge = self.hedefrotasi[self.hedefrotasicount]
                                   self.hedef_amac = self.hedef_amaclar[self.hedefrotasicount]
@@ -602,25 +616,28 @@ class Kargo(KargoParent):
 
                           return
                   elif self.hedef_amac == 2:
-                      print("HELLO")
+                      #print("HELLO")
                       self.hedef_enlemboylam_ulasildi = False
                       self.SarjIstasyonunainisYap()
-                      return
-                  
+                      return             
                   elif self.hedef_amac == 3: # Kargo bolgesi (baslangica don calismiyor o yuzden baslangica don false olsa bile baslangica donecek)
-                      print("KARGO Konumuna gelindi")
-                      if self.yenihedefdurcount < 10: # Once bir dur rahatla
-                          if self.yenihedefdurcount == 9:
+                      self.hedef_enlemboylam_ulasildi_kargo = True
+                      return
+                      
+                      
+                      #print("KARGO Konumuna gelindi")
+                      if self.kargo_durumu: # Sadece bir kargo icin calisir
+                          if not self.kargoteslimedildimi:
+                              self.dur()
+                              self.kargoteslimedildimi = True
                               self.teslim_et()
-                              print("Kargo ulaşıldı")
-                              
-                          print("test")
-                          self.dur()
-                          self.yenihedefdurcount += 1  
+                              #print("Kargo ulaşıldı")
+                                                      
                           return
                       
                       else: # Siradaki hedefe bak. 
-                          self.yenihedefdurcount = 0
+                          self.hedef_enlemboylam_ulasildi = True
+                          self.kargoteslimedildimi = False
                           if hasattr(self.hedefrotasi[self.hedefrotasicount], 'bolge'): # Buraya hic gelmiyor die dokunmuoz suanlik Cemre 11 mart
                               self.hedef = self.hedefrotasi[self.hedefrotasicount]
                               self.hedef_bolge = self.hedefrotasi[self.hedefrotasicount].bolge
@@ -631,15 +648,15 @@ class Kargo(KargoParent):
 
                               elif len(self.hedefrotasi) <= (self.hedefrotasicount + 1):
                                   if self.baslangica_don: 
-                                      print("test1")
+                                      #print("test1")
                                       self.hedef_amac = 0 
                                       self.hedef_bolge = self.hedefrotasi[self.hedefrotasicount]
                                       #self.hedef_amac = self.hedef_amaclar[self.hedefrotasicount]
                                   else:  
-                                      print('test2')
+                                      #print('test2')
                                       pass
                               else:  
-                                  print('test3') # Hata burada
+                                  #print('test3') # Hata burada
                                   # self.hedef_amac = 2 # suan gerek yok 8 mart 2025 cemre
                                   self.hedef_bolge = self.hedefrotasi[self.hedefrotasicount]
                                   self.hedef_amac = self.hedef_amaclar[self.hedefrotasicount]
@@ -661,7 +678,7 @@ class Kargo(KargoParent):
                       
                       
 
-                  print("Siradaki hedef", self.hedef_bolge.enlem, self.hedef_bolge.boylam)
+                  #print("Siradaki hedef", self.hedef_bolge.enlem, self.hedef_bolge.boylam)
                   
                   
               
@@ -724,6 +741,41 @@ class Kargo(KargoParent):
                       self.HedefeDon(hedefx, hedefy, self.filtered_gnss_enlem, self.filtered_gnss_boylam)
           #**|| Way Pointe git ||**
   
+  # Kargoya İniş yapar ve kargoyu birakir
+  def kargoyainisyap(self, gnsshata=False):
+      self.dur()
+      bolge = self.harita.bolge(self.filtered_gnss_enlem, self.filtered_gnss_boylam)
+      if bolge.inilebilir or gnsshata or bolge.inis_bolgesi or True: # bolge inilebilir vs. calismadigi icin suanlik bu 2. kontrol yapilmayacak
+          if self.lidar.hata:
+              if self.radar.hata:
+                  self.asagi_git(YAVAS)
+              else:  
+                  if self.radar.mesafe <= 5:
+                      self.hedefe_ulasildi = True
+                      return True
+                  elif self.radar.mesafe <= 15:
+                      self.asagi_git(YAVAS)
+                      return False
+                  else:
+                      self.asagi_git(HIZLI)
+                      return False
+              
+          else:
+              if self.lidar.mesafe <= 5:
+                  self.teslim_et()
+                  self.hedefe_ulasildi = True
+                  return True
+              elif self.lidar.mesafe <= 15:
+                  self.asagi_git(YAVAS)
+                  return False
+              else:
+                  self.asagi_git(HIZLI)
+                  return False
+          
+      else:
+          self.ileri_git(YAVAS) # EKSIK: Hedefe don sonra yavasca ileri git.
+          return False
+      
   # Verilen 2 bölge arasını istenilen parçaya bölüp engel var mı yok mu bilgisini saklar
   def AradaEngelVarmi(self, bolge1, bolge2, segment_length=1):
       arac_x, arac_y = bolge1[0], bolge1[1]
@@ -1035,14 +1087,14 @@ class Kargo(KargoParent):
   def HedefeinisYap(self, gnsshata=False):
       self.dur()
       bolge = self.harita.bolge(self.filtered_gnss_enlem, self.filtered_gnss_boylam)
-      print("--------------")
-      print(bolge.inilebilir, self.lidar.hata)
+      #print("--------------")
+      #print(bolge.inilebilir, self.lidar.hata)
       if bolge.inilebilir or gnsshata or bolge.inis_bolgesi or True: # bolge inilebilir vs. calismadigi icin suanlik bu 2. kontrol yapilmayacak
           if self.lidar.hata:
               if self.radar.hata:
                   self.asagi_git(YAVAS)
               else:  
-                  if self.radar.mesafe <= 2:
+                  if self.radar.mesafe <= 5:
                       self.hedefe_ulasildi = True
                       return True
                   elif self.radar.mesafe <= 15:
@@ -1053,7 +1105,7 @@ class Kargo(KargoParent):
                       return False
               
           else:
-              if self.lidar.mesafe <= 2:
+              if self.lidar.mesafe <= 5:
                   self.hedefe_ulasildi = True
                   return True
               elif self.lidar.mesafe <= 15:
@@ -1098,7 +1150,7 @@ class Kargo(KargoParent):
                   return False
           
       else:
-          print("HELLO TEST #")
+          #print("HELLO TEST #")
           self.ileri_git(YAVAS) # EKSIK: Hedefe don sonra yavasca ileri git.
           return False
     
@@ -1284,7 +1336,7 @@ class Kargo(KargoParent):
       mesafe_x = self.hedef_bolge.enlem - self.arac_x
       mesafe_y = self.hedef_bolge.boylam - self.arac_y 
       if abs(mesafe_y) < 30 and abs(mesafe_x) < 30: 
-          print("Line 1213 Test")
+          #print("Line 1213 Test")
           self.angle = math.atan2(self.hedef_bolge.boylam - self.arac_y, self.hedef_bolge.enlem - self.arac_x) # Hedefe olan açı (Radyan)
           new_x, new_y = self.EngelTespit(self.arac_x, self.arac_y, self.angle, blokboyutu=2)
           self.rota.append((new_x, new_y, False, False, False)) # Eğer sıradakı hedef çok yakınsa öylesine aradan boş bir konum girki hata vermesin
@@ -1305,7 +1357,7 @@ class Kargo(KargoParent):
               bolgetest3 = self.harita.bolge(new_test_x3, new_test_y3)
 
               if self.arac_yukselti > self.azami_yukseklik + 10:
-                  print("Test23452")
+                  #print("Test23452")
                   new_x, new_y = self.EngelTespit(self.arac_x, self.arac_y, self.angle, blokboyutu=45)
                   self.arac_x, self.arac_y = new_x, new_y
                   self.arac_yukselti = self.hedef_bolge.yukselti
@@ -1341,7 +1393,7 @@ class Kargo(KargoParent):
               if abs(mesafe_y) < 30 and abs(mesafe_x) < 30: 
                   break
               elif self.hedef_bolge.yukselti > 100:
-                  print("KOTU DURUM BU KOD CALISMAMASI LAZIM")
+                  #print("KOTU DURUM BU KOD CALISMAMASI LAZIM")
                   if abs(mesafe_y) < 50 and abs(mesafe_x) < 50: 
                       break
 
@@ -1349,8 +1401,8 @@ class Kargo(KargoParent):
               self.arac_x, self.arac_y = new_x, new_y
 
           self.arac_yukselti = self.hedef_bolge.yukselti
-          print(self.rota)
-          print("+++++++++++")
+          #print(self.rota)
+          #print("+++++++++++")
           self.rota.insert(0, (self.filtered_gnss_enlem, self.filtered_gnss_boylam, False, False, False))
           #*******|| Rota Oluşturulması ||********
           #*******|| Rota Kısaltılması ||********
@@ -1386,10 +1438,10 @@ class Kargo(KargoParent):
 
           del self.rota[0]
 
-      print(self.hedef_bolge)
-      print(self.baslangic_bolgesi)
-      print("------------")
-      print(self.rota)
+      #print(self.hedef_bolge)
+      #print(self.baslangic_bolgesi)
+      #print("------------")
+      #print(self.rota)
           #*******|| Rota Kısaltılması ||********
     
   # Azami Yüksekliğe Yükselir

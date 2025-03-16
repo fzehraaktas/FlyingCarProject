@@ -16,41 +16,41 @@ def bolgeler_arasi_mesafe(bolge_1, bolge_2):
 class Cezeri(CezeriParent):
     def __init__(self, id = 0):
         super().__init__(id = id, keyboard = False, sensor_mode = NORMAL)
-        #print(self.gnss.irtifa)
+        ##print(self.gnss.irtifa)
 
 
     def run(self):
         super().run()
-        #print(self.manyetometre.veri)
+        ##print(self.manyetometre.veri)
 
 class Ambulans(AmbulansParent):
     def __init__(self, id = 0):
         super().__init__(id = id, keyboard = False, sensor_mode = NORMAL)
-        #print(self.gnss.irtifa)
+        ##print(self.gnss.irtifa)
 
 
     def run(self):
         super().run()
-        print("Hello")
-        #print(self.manyetometre.veri)
+        #print("Hello")
+        ##print(self.manyetometre.veri)
      
 class Kargo(KargoParent):
     def __init__(self, id = 0):
         super().__init__(id = id, keyboard = False, sensor_mode = NORMAL)
-        #print(self.gnss.irtifa)
+        ##print(self.gnss.irtifa)
 
 
     def run(self):
         super().run()
-        #print(self.manyetometre.veri)
+        ##print(self.manyetometre.veri)
 
 class Itfaiye(ItfaiyeParent):
     def __init__(self, id = 0):
         super().__init__(id = id, keyboard = False, sensor_mode = NORMAL)
-        #print(self.gnss.irtifa)
-        print(self.harita.yangin_bolgeleri)
-        print(self.harita.yangin_bolgeleri[0])
-        print(self.baslangica_don)
+        ##print(self.gnss.irtifa)
+        #print(self.harita.yangin_bolgeleri)
+        #print(self.harita.yangin_bolgeleri[0])
+        #print(self.baslangica_don)
 
         self.hedef_amaclar = []
         self.hedef_amac = None
@@ -122,10 +122,10 @@ class Itfaiye(ItfaiyeParent):
  
         self.hedefbolgedegistimi_count = 0 
         self.eskihedefler = [(hedef.enlem, hedef.boylam) for hedef in self.harita.yangin_bolgeleri]
-        print(self.eskihedefler)
-        print(self.baslangic_bolgesi, "TEST")
-        for bolge in self.hedefrotasi:
-            print(bolge.enlem, bolge.boylam, bolge.amac)
+        #print(self.eskihedefler)
+        #print(self.baslangic_bolgesi, "TEST")
+        #for bolge in self.hedefrotasi:
+            #print(bolge.enlem, bolge.boylam, bolge.amac)
         #*******|| Hedef Bölge Hesabı ||********
  
         #*******|| Kalkış yap / İniş yap ||******** 
@@ -192,7 +192,7 @@ class Itfaiye(ItfaiyeParent):
  
     def run(self):
         super().run()
-        #print(self.manyetometre.veri)
+        ##print(self.manyetometre.veri)
         #*******||Filter||********
         if not self.gnss_userhata or not self.gnss.hata:
             self.filtered_gnss_enlem = self.FilterData(50, gnssenlem=True)
@@ -352,6 +352,7 @@ class Itfaiye(ItfaiyeParent):
 
                     return
         if self.hedefe_ulasildi:
+            print("GÖREV TAMAMLANDI")
             return
         if self.gnsshatasidogrulandi:
             self.HedefeinisYap(gnsshata = True)
@@ -545,7 +546,7 @@ class Itfaiye(ItfaiyeParent):
 
                     if self.hedef_amac == 0: 
                         self.hedef_enlemboylam_ulasildi = True
-                        print("HELOLLFJOFJOF")
+                        #print("HELOLLFJOFJOF")
                         if self.gnss_userhata: 
                             self.gnsshatasidogrulandi = True
                             return
@@ -596,7 +597,7 @@ class Itfaiye(ItfaiyeParent):
 
                             return
                     elif self.hedef_amac == 2:
-                        print("HELLO")
+                        #print("HELLO")
                         self.hedef_enlemboylam_ulasildi = False
                         self.SarjIstasyonunainisYap()
                         return
@@ -604,12 +605,12 @@ class Itfaiye(ItfaiyeParent):
 
                         #if self.harita.yangin_bolgeleri is not []: # Sadece bir yangin icin calisir
                         if self.su_seviyesi > 6:
-                            print("su acik")
+                            #print("su acik")
                             self.dur()
                             self.su_ac(True)
                             self.suacik = True
                         
-                            print(self.su_seviyesi)
+                            #print(self.su_seviyesi)
                             return
                         
                         else: # Siradaki hedefe bak. 
@@ -1024,14 +1025,14 @@ class Itfaiye(ItfaiyeParent):
     def HedefeinisYap(self, gnsshata=False):
         self.dur()
         bolge = self.harita.bolge(self.filtered_gnss_enlem, self.filtered_gnss_boylam)
-        print("--------------")
-        print(bolge.inilebilir, self.lidar.hata)
+        #print("--------------")
+        #print(bolge.inilebilir, self.lidar.hata)
         if bolge.inilebilir or gnsshata or bolge.inis_bolgesi or True: # bolge inilebilir vs. calismadigi icin suanlik bu 2. kontrol yapilmayacak
             if self.lidar.hata:
                 if self.radar.hata:
                     self.asagi_git(YAVAS)
                 else:  
-                    if self.radar.mesafe <= 2:
+                    if self.radar.mesafe <= 5:
                         self.hedefe_ulasildi = True
                         return True
                     elif self.radar.mesafe <= 15:
@@ -1042,7 +1043,7 @@ class Itfaiye(ItfaiyeParent):
                         return False
                 
             else:
-                if self.lidar.mesafe <= 2:
+                if self.lidar.mesafe <= 5:
                     self.hedefe_ulasildi = True
                     return True
                 elif self.lidar.mesafe <= 15:
@@ -1087,7 +1088,7 @@ class Itfaiye(ItfaiyeParent):
                     return False
             
         else:
-            print("HELLO TEST #")
+            #print("HELLO TEST #")
             self.ileri_git(YAVAS) # EKSIK: Hedefe don sonra yavasca ileri git.
             return False
      
@@ -1371,10 +1372,10 @@ class Itfaiye(ItfaiyeParent):
 
             del self.rota[0]
 
-        print(self.hedef_bolge)
-        print(self.baslangic_bolgesi)
-        print("------------")
-        print(self.rota)
+        #print(self.hedef_bolge)
+        #print(self.baslangic_bolgesi)
+        #print("------------")
+        #print(self.rota)
             #*******|| Rota Kısaltılması ||********
      
     # Azami Yüksekliğe Yükselir
