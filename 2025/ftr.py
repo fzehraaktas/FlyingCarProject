@@ -13,6 +13,18 @@ def bolgeler_arasi_mesafe(bolge_1, bolge_2):
 
     return math.sqrt(enlem_fark**2 + boylam_fark**2)
  
+# Trafik
+bolgeler = [None, None, None, None, None]
+sarj_durumlari = [None, None, None, None, None]
+inisebaslandimitrafik = [None, None, None, None, None]
+yukseltitrafik = [None, None, None, None, None]
+
+def bolgeler_arasi_mesafe(bolge_1, bolge_2):
+    enlem_fark = bolge_1.enlem - bolge_2.enlem
+    boylam_fark = bolge_1.boylam - bolge_2.boylam
+
+    return math.sqrt(enlem_fark**2 + boylam_fark**2)
+ 
 class Cezeri(CezeriParent):  
     def __init__(self, id = 0):
         super().__init__(id = id, keyboard = False, sensor_mode = NORMAL)
@@ -1175,51 +1187,66 @@ class Cezeri(CezeriParent):
         boylam2 = hedef2.boylam if hasattr(hedef2, 'boylam') else hedef2.bolge.boylam
         return math.sqrt((enlem2 - enlem1) ** 2 + (boylam2 - boylam1) ** 2)
 
+    def otoyoldangit(self, nextx, nexty, otoyol):
+        mindistance = float('inf')
+        enyakinnoktax = nextx
+        enyakinnoktay = nexty
+
+        for otoyolveri in self.harita.otoyol_veri:
+            distance = math.sqrt((otoyolveri.enlem - nextx) ** 2 + (otoyolveri.boylam - nexty) ** 2)
+            if distance < mindistance:
+                mindistance= distance
+                enyakinnoktax = otoyolveri.enlem
+                enyakinnoktay = otoyolveri.boylam
+        
+        return enyakinnoktax, enyakinnoktay
+
     # INIT fonksiyonu    
     def RotayiYenidenHesapla(self):
         for _ in range(1000):
             self.angle = math.atan2(self.hedef_bolge.boylam - self.arac_y, self.hedef_bolge.enlem - self.arac_x) # Hedefe olan açı (Radyan)
             new_x, new_y = self.EngelTespit(self.arac_x, self.arac_y, self.angle, blokboyutu=20)
-            new_test_x, new_test_y = self.EngelTespit(self.arac_x, self.arac_y, self.angle, blokboyutu=15)
-            new_test_x2, new_test_y2 = self.EngelTespit(self.arac_x, self.arac_y, self.angle, blokboyutu=10)
-            new_test_x3, new_test_y3 = self.EngelTespit(self.arac_x, self.arac_y, self.angle, blokboyutu=5)
-            engelvarmi = False
-            ruzgarvarmi = False
-            yasaklibolgevarmi = False
-            bolge = self.harita.bolge(new_x, new_y)
-            bolgetest = self.harita.bolge(new_test_x, new_test_y)
-            bolgetest2 = self.harita.bolge(new_test_x2, new_test_y2)
-            bolgetest3 = self.harita.bolge(new_test_x3, new_test_y3)
+            new_x, new_y = self.otoyoldangit(new_x, new_y, self.harita.otoyol_veri)
+            # new_test_x, new_test_y = self.EngelTespit(self.arac_x, self.arac_y, self.angle, blokboyutu=15)
+            # new_test_x2, new_test_y2 = self.EngelTespit(self.arac_x, self.arac_y, self.angle, blokboyutu=10)
+            # new_test_x3, new_test_y3 = self.EngelTespit(self.arac_x, self.arac_y, self.angle, blokboyutu=5)
+            # # engelvarmi = False
+            # ruzgarvarmi = False
+            # yasaklibolgevarmi = False
+            # bolge = self.harita.bolge(new_x, new_y)
+            # bolgetest = self.harita.bolge(new_test_x, new_test_y)
+            # bolgetest2 = self.harita.bolge(new_test_x2, new_test_y2)
+            # bolgetest3 = self.harita.bolge(new_test_x3, new_test_y3)
 
-            if self.arac_yukselti > 330:
-                new_x, new_y = self.EngelTespit(self.arac_x, self.arac_y, self.angle, blokboyutu=45)
-                self.arac_x, self.arac_y = new_x, new_y
-                self.arac_yukselti = self.hedef_bolge.yukselti
+            # if self.arac_yukselti > 330:
+            #     new_x, new_y = self.EngelTespit(self.arac_x, self.arac_y, self.angle, blokboyutu=45)
+            #     self.arac_x, self.arac_y = new_x, new_y
+            #     self.arac_yukselti = self.hedef_bolge.yukselti
 
-            if bolgetest.yukselti > self.engelsiniri:
-                new_x, new_y = self.EngelGec(self.arac_x, self.arac_y, self.angle)
-                engelvarmi = True
-            elif bolge.yukselti > self.engelsiniri or bolge.yavas_bolge:
-                new_x, new_y = self.EngelGec(self.arac_x, self.arac_y, self.angle)
-                engelvarmi = True  
-            elif bolgetest.ruzgar: 
-                new_x, new_y = self.EngelGec(self.arac_x, self.arac_y, self.angle, senaryo = 'RUZGARLIBOLGE')
-                ruzgarvarmi = True 
-            elif bolge.ruzgar:
-                new_x, new_y = self.EngelGec(self.arac_x, self.arac_y, self.angle, senaryo = 'RUZGARLIBOLGE')
-                ruzgarvarmi = True  
-            elif bolge.ucusa_yasakli_bolge:
-                new_x, new_y = self.EngelGec(self.arac_x, self.arac_y, self.angle, senaryo = 'YASAKLIBOLGE')
-                yasaklibolgevarmi = True   
-            elif bolgetest.ucusa_yasakli_bolge or bolgetest2.ucusa_yasakli_bolge or bolgetest3.ucusa_yasakli_bolge:
-                new_x, new_y = self.EngelGec(self.arac_x, self.arac_y, self.angle, senaryo = 'YASAKLIBOLGE')
-                yasaklibolgevarmi = True   
-            elif bolge.yavas_bolge:
-                new_x, new_y = self.EngelGec(self.arac_x, self.arac_y, self.angle, senaryo = 'YAVASBOLGE')
-                yasaklibolgevarmi = True  
-            elif bolgetest.yavas_bolge:
-                new_x, new_y = self.EngelGec(self.arac_x, self.arac_y, self.angle, senaryo = 'YAVASBOLGE')
-                yasaklibolgevarmi = True  
+            # if bolgetest.yukselti > self.engelsiniri:
+            #     new_x, new_y = self.EngelGec(self.arac_x, self.arac_y, self.angle)
+            #     engelvarmi = True
+            # elif bolge.yukselti > self.engelsiniri or bolge.yavas_bolge:
+            #     new_x, new_y = self.EngelGec(self.arac_x, self.arac_y, self.angle)
+            #     engelvarmi = True  
+            # elif bolgetest.ruzgar: 
+            #     new_x, new_y = self.EngelGec(self.arac_x, self.arac_y, self.angle, senaryo = 'RUZGARLIBOLGE')
+            #     ruzgarvarmi = True 
+            # elif bolge.ruzgar:
+            #     new_x, new_y = self.EngelGec(self.arac_x, self.arac_y, self.angle, senaryo = 'RUZGARLIBOLGE')
+            #     ruzgarvarmi = True  
+            # elif bolge.ucusa_yasakli_bolge:
+            #     new_x, new_y = self.EngelGec(self.arac_x, self.arac_y, self.angle, senaryo = 'YASAKLIBOLGE')
+            #     yasaklibolgevarmi = True   
+            # elif bolgetest.ucusa_yasakli_bolge or bolgetest2.ucusa_yasakli_bolge or bolgetest3.ucusa_yasakli_bolge:
+            #     new_x, new_y = self.EngelGec(self.arac_x, self.arac_y, self.angle, senaryo = 'YASAKLIBOLGE')
+            #     yasaklibolgevarmi = True   
+            # elif bolge.yavas_bolge:
+            #     new_x, new_y = self.EngelGec(self.arac_x, self.arac_y, self.angle, senaryo = 'YAVASBOLGE')
+            #     yasaklibolgevarmi = True  
+            # elif bolgetest.yavas_bolge:
+            #     new_x, new_y = self.EngelGec(self.arac_x, self.arac_y, self.angle, senaryo = 'YAVASBOLGE')
+            #     yasaklibolgevarmi = True  
             
             mesafe_x = self.hedef_bolge.enlem - self.arac_x
             mesafe_y = self.hedef_bolge.boylam - self.arac_y 
@@ -1230,7 +1257,8 @@ class Cezeri(CezeriParent):
                 if abs(mesafe_y) < 50 and abs(mesafe_x) < 50: 
                     break
 
-            self.rota.append((new_x, new_y, engelvarmi, ruzgarvarmi, yasaklibolgevarmi)) # Enlem Boylam Engel
+            #self.rota.append((new_x, new_y, engelvarmi, ruzgarvarmi, yasaklibolgevarmi)) # Enlem Boylam Engel
+            self.rota.append((new_x, new_y, False, False, False)) # FTR icin suanlik boyle 16 mart cemre
             self.arac_x, self.arac_y = new_x, new_y
 
         self.arac_yukselti = self.hedef_bolge.yukselti
@@ -1238,35 +1266,35 @@ class Cezeri(CezeriParent):
         self.rota.insert(0, (self.filtered_gnss_enlem, self.filtered_gnss_boylam, False, False, False))
         #*******|| Rota Oluşturulması ||********
         #*******|| Rota Kısaltılması ||********
-        index = 0 
-        while index < len(self.rota) - 1: 
-            last_no_obstacle_index = index 
-            # Start from the next waypoint and try to find the farthest waypoint without obstacles
-            for index2 in range(index + 1, len(self.rota)):
-                waypoint2 = self.rota[index2]
+        # index = 0 
+        # while index < len(self.rota) - 1: 
+        #     last_no_obstacle_index = index 
+        #     # Start from the next waypoint and try to find the farthest waypoint without obstacles
+        #     for index2 in range(index + 1, len(self.rota)):
+        #         waypoint2 = self.rota[index2]
 
-                # Check if there is an obstacle between the current waypoint and the next
-                if self.AradaEngelVarmi(self.rota[index], waypoint2, segment_length=1):
-                    break
-                elif self.AradaEngelVarmi(self.rota[index], waypoint2, segment_length=15):
-                    break
-                elif self.AradaEngelVarmi(self.rota[index], waypoint2, segment_length=10):
-                    break
-                elif self.AradaEngelVarmi(self.rota[index], waypoint2, segment_length=5):
-                    break
-                elif self.AradaEngelVarmi(self.rota[index], waypoint2, segment_length=2):
-                    break
-                #elif self.rota[index2][4] or self.rota[index][4] or self.rota[index2][3] or self.rota[index][3]:
-                   # break
-                else:
-                    # If no obstacle, set index2 as the new waypoint to compare from index
-                    last_no_obstacle_index = index2
+        #         # Check if there is an obstacle between the current waypoint and the next
+        #         if self.AradaEngelVarmi(self.rota[index], waypoint2, segment_length=1):
+        #             break
+        #         elif self.AradaEngelVarmi(self.rota[index], waypoint2, segment_length=15):
+        #             break
+        #         elif self.AradaEngelVarmi(self.rota[index], waypoint2, segment_length=10):
+        #             break
+        #         elif self.AradaEngelVarmi(self.rota[index], waypoint2, segment_length=5):
+        #             break
+        #         elif self.AradaEngelVarmi(self.rota[index], waypoint2, segment_length=2):
+        #             break
+        #         #elif self.rota[index2][4] or self.rota[index][4] or self.rota[index2][3] or self.rota[index][3]:
+        #            # break
+        #         else:
+        #             # If no obstacle, set index2 as the new waypoint to compare from index
+        #             last_no_obstacle_index = index2
 
-            # Delete waypoints between the current one and the last one without an obstacle
-            if last_no_obstacle_index > index + 1:
-                del self.rota[index + 1:last_no_obstacle_index]
+        #     # Delete waypoints between the current one and the last one without an obstacle
+        #     if last_no_obstacle_index > index + 1:
+        #         del self.rota[index + 1:last_no_obstacle_index]
             
-            index += 1
+        #     index += 1
 
         del self.rota[0]
         #*******|| Rota Kısaltılması ||********
@@ -1388,8 +1416,19 @@ class Cezeri(CezeriParent):
         elif deviationimuz:
             filtered_list = [(0 - self.FilterData(40, imuz=True)) for _ in range(katsayi)]
             return (sum(filtered_list) / len(filtered_list))
-           
-# itfaiye
+        
+# Ana program
+#itfaiye_1 = Itfaiye(id=1)
+#kargo_1 = Kargo(id=1) 
+#ambulans_1 = Ambulans(id=1)
+cezeri_1 = Cezeri(id=1)
+
+while robot.is_ok():
+    #itfaiye_1.run()
+    #kargo_1.run() 
+    #ambulans_1.run()
+    cezeri_1.run()
+          
 class Itfaiye(ItfaiyeParent):
     def __init__(self, id = 0):
         super().__init__(id = id, keyboard = False, sensor_mode = NORMAL)
