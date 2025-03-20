@@ -376,6 +376,7 @@ class Kargo(KargoParent):
           self.HedefeinisYap()
       if self.hedef_enlemboylam_ulasildi_kargo:
           self.kargoyainisyap()
+          return
       #*******|| Kalkış / Bitiş / İniş||********
 
       #*******||Spoff Detect / GNSS Detect||********
@@ -750,9 +751,29 @@ class Kargo(KargoParent):
               if self.radar.hata:
                   self.asagi_git(YAVAS)
               else:  
-                  if self.radar.mesafe <= 5:
-                      self.hedefe_ulasildi = True
-                      return True
+                  if self.radar.mesafe <= 3:
+                    self.teslim_et()
+                    if self.kargo_durumu:
+                        return True
+                    else:
+                        # self.hedefe_ulasildi = True # baslangica donsun die bole yaptm suanlik 20 mart Cemre
+                        self.hedef_enlemboylam_ulasildi_kargo = False
+                        self.hedef_amac = 0
+                        self.hedef_bolge = self.baslangic_bolgesi
+
+                        # Rota
+                        self.rota = []
+                        self.rota_count = 0
+                        self.arac_x, self.arac_y = self.filtered_gnss_enlem, self.filtered_gnss_boylam
+                        self.durcount = 0
+
+                        # Kalkış Yap / Hedefe Ulaşıldı
+                        self.hedefe_ulasildi = False
+                        self.hedef_enlemboylam_ulasildi =False
+                        self.kalkis_yap = False
+                        self.yukseklige_ulasildi = False
+                        self.RotayiYenidenHesapla()
+                        return True
                   elif self.radar.mesafe <= 15:
                       self.asagi_git(YAVAS)
                       return False
@@ -761,10 +782,29 @@ class Kargo(KargoParent):
                       return False
               
           else:
-              if self.lidar.mesafe <= 5:
+              if self.lidar.mesafe <= 3:
                   self.teslim_et()
-                  self.hedefe_ulasildi = True
-                  return True
+                  if self.kargo_durumu:
+                    return True
+                  else:
+                    # self.hedefe_ulasildi = True # baslangica donsun die bole yaptm suanlik 20 mart Cemre
+                    self.hedef_enlemboylam_ulasildi_kargo = False
+                    self.hedef_amac = 0
+                    self.hedef_bolge = self.baslangic_bolgesi
+
+                    # Rota
+                    self.rota = []
+                    self.rota_count = 0
+                    self.arac_x, self.arac_y = self.filtered_gnss_enlem, self.filtered_gnss_boylam
+                    self.durcount = 0
+
+                    # Kalkış Yap / Hedefe Ulaşıldı
+                    self.hedefe_ulasildi = False
+                    self.hedef_enlemboylam_ulasildi =False
+                    self.kalkis_yap = False
+                    self.yukseklige_ulasildi = False
+                    self.RotayiYenidenHesapla()
+                    return True
               elif self.lidar.mesafe <= 15:
                   self.asagi_git(YAVAS)
                   return False
@@ -1094,7 +1134,7 @@ class Kargo(KargoParent):
               if self.radar.hata:
                   self.asagi_git(YAVAS)
               else:  
-                  if self.radar.mesafe <= 5:
+                  if self.radar.mesafe <= 3:
                       self.hedefe_ulasildi = True
                       return True
                   elif self.radar.mesafe <= 15:
@@ -1105,7 +1145,7 @@ class Kargo(KargoParent):
                       return False
               
           else:
-              if self.lidar.mesafe <= 5:
+              if self.lidar.mesafe <= 3:
                   self.hedefe_ulasildi = True
                   return True
               elif self.lidar.mesafe <= 15:
