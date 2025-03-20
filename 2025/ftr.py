@@ -1499,6 +1499,8 @@ class Itfaiye(ItfaiyeParent):
         #print(self.baslangic_bolgesi, "TEST")
         #for bolge in self.hedefrotasi:
             #print(bolge.enlem, bolge.boylam, bolge.amac)
+        
+        self.hedefrotasi.pop() # FTR ICIN SUANLIK
         #*******|| Hedef Bölge Hesabı ||********
  
         #*******|| Kalkış yap / İniş yap ||******** 
@@ -1565,6 +1567,7 @@ class Itfaiye(ItfaiyeParent):
  
     def run(self):
         super().run()
+
         ##print(self.manyetometre.veri)
         #*******||Filter||********
         if not self.gnss_userhata or not self.gnss.hata:
@@ -1725,7 +1728,9 @@ class Itfaiye(ItfaiyeParent):
 
                     return
         if self.hedefe_ulasildi:
-            print("GÖREV TAMAMLANDI")
+            print("--------------------------")
+            print("GÖREV TAMAMLANDI - ITFAIYE")
+            print("--------------------------")
             return
         if self.gnsshatasidogrulandi:
             self.HedefeinisYap(gnsshata = True)
@@ -1977,13 +1982,12 @@ class Itfaiye(ItfaiyeParent):
                     elif self.hedef_amac == 3: # Yangın bolgesi (baslangica don calismiyor o yuzden baslangica don false olsa bile baslangica donecek)
 
                         #if self.harita.yangin_bolgeleri is not []: # Sadece bir yangin icin calisir
-                        if self.su_seviyesi > 6:
+                        if self.su_seviyesi > 9:
                             #print("su acik")
                             self.dur()
                             self.su_ac(True)
                             self.suacik = True
                         
-                            #print(self.su_seviyesi)
                             return
                         
                         else: # Siradaki hedefe bak. 
@@ -2001,10 +2005,12 @@ class Itfaiye(ItfaiyeParent):
                                 elif len(self.hedefrotasi) <= (self.hedefrotasicount + 1):
                                     if self.baslangica_don: 
                                         self.hedef_amac = 0 
-                                        self.hedef_bolge = self.hedefrotasi[self.hedefrotasicount]
+                                        #self.hedef_bolge = self.hedefrotasi[self.hedefrotasicount] # Suanlik gerek yok 20 mart cemre
+                                        self.hedef_bolge = self.baslangic_bolgesi
                                         #self.hedef_amac = self.hedef_amaclar[self.hedefrotasicount]
                                     else:  
-                                        pass
+                                        self.hedef_amac = 0
+                                        self.hedef_bolge = self.baslangic_bolgesi # suanlik boyle normalde burasi pass
                                 else:  
                                     # self.hedef_amac = 2 # suan gerek yok 8 mart 2025 cemre
                                     self.hedef_bolge = self.hedefrotasi[self.hedefrotasicount]
